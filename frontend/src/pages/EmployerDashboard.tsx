@@ -3,7 +3,8 @@ import { motion } from 'framer-motion';
 import { Navbar, Footer } from '../components/Layout';
 import { UploadCloud, FileText, CheckCircle, RefreshCcw, Database, Server, Download } from 'lucide-react';
 import { config } from '../lib/config';
-import { generateRegistry, PayrollRegistry } from '../lib/registry';
+import { generateRegistry } from '../lib/registry';
+import type { PayrollRegistry } from '../lib/registry';
 import { deployRootToContract, fundEscrowContract } from '../lib/stellar';
 
 interface WorkerData {
