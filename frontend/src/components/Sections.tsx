@@ -111,7 +111,7 @@ const features = [
   {
     icon: <Globe size={24} color="var(--color-warning)" aria-hidden="true" />,
     title: 'Global Fiat Off-Ramp',
-    desc: 'Atomic SDEX path payments convert USDC to 190+ local fiat assets via licensed anchors. No exchange registration needed.',
+    desc: 'Atomic SDEX path payments convert XLM to 190+ local fiat assets via licensed anchors. No exchange registration needed.',
   },
   {
     icon: <Zap size={24} color="#c084fc" aria-hidden="true" />,
@@ -171,7 +171,7 @@ export function FeaturesSection() {
 
 // ── How It Works ─────────────────────────────────────────────
 const steps = [
-  { num: 1, title: 'Employer Deposits Escrow', desc: 'The employer locks USDC into the Soroban payroll contract and registers a Merkle root of worker entitlements.' },
+  { num: 1, title: 'Employer Deposits Escrow', desc: 'The employer locks XLM into the Soroban payroll contract and registers a Merkle root of worker entitlements.' },
   { num: 2, title: 'Worker Generates ZK Proof', desc: 'In this browser, you enter your private credentials. A Groth16 proof is generated locally — your data never leaves your device.' },
   { num: 3, title: 'Proof Submitted via Relayer', desc: 'A relayer packages the proof into a Stellar fee-bump transaction and submits it to the network on your behalf. Zero XLM required.' },
   { num: 4, title: 'Contract Verifies & Routes', desc: 'The Soroban contract verifies the ZK proof, marks your nullifier as spent, then executes an atomic SDEX path payment to your chosen asset.' },

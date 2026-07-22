@@ -1,6 +1,6 @@
 /**
  * AegisPay — WalletPanel component
- * Shows: Connect button | Wallet dropdown (address, XLM, USDC, Disconnect)
+ * Shows: Connect button | Wallet dropdown (address, XLM, XLM, Disconnect)
  * Design: Neumorphism × Glassmorphism
  */
 
@@ -27,7 +27,7 @@ function useCopyToClipboard(timeout = 1500) {
 
 // ── Wallet Dropdown ──────────────────────────────────────────
 function WalletDropdown({ onClose }: { onClose: () => void }) {
-  const { address, network, xlmBalance, usdcBalance, disconnect, refresh } = useWalletContext();
+  const { address, network, xlmBalance, XLMBalance, disconnect, refresh } = useWalletContext();
   const { copied, copy } = useCopyToClipboard();
   const explorerUrl = `https://stellar.expert/explorer/${network === 'PUBLIC' ? 'public' : 'testnet'}/account/${address}`;
 
@@ -83,9 +83,9 @@ function WalletDropdown({ onClose }: { onClose: () => void }) {
         </div>
         <div className="wallet-balance-row">
           <span className="wallet-balance-label">
-            <span className="wallet-usdc-dot" /> USDC
+            <span className="wallet-XLM-dot" /> XLM
           </span>
-          <span className="wallet-balance-value accent">{formatBalance(usdcBalance)}</span>
+          <span className="wallet-balance-value accent">{formatBalance(XLMBalance)}</span>
         </div>
       </div>
 

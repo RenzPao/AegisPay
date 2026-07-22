@@ -164,7 +164,7 @@ export default function EmployerDashboard() {
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span style={{ color: 'var(--color-muted)', fontSize: '0.9rem' }}>Escrow Balance</span>
-                  <span style={{ fontWeight: 'bold' }}>${balance} USDC</span>
+                  <span style={{ fontWeight: 'bold' }}>{balance} XLM</span>
                 </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 'var(--space-4)', fontSize: '0.85rem', color: 'var(--color-muted)' }}>
@@ -182,7 +182,7 @@ export default function EmployerDashboard() {
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}>
                   <span style={{ color: 'var(--color-muted)' }}>Required Deposit:</span>
-                  <span style={{ fontWeight: 'bold' }}>${totalPayroll.toFixed(2)} USDC</span>
+                  <span style={{ fontWeight: 'bold' }}>{totalPayroll.toFixed(2)} XLM</span>
                 </div>
               </div>
               <div style={{ display: 'flex', gap: 'var(--space-3)', flexDirection: 'column' }}>
@@ -193,7 +193,7 @@ export default function EmployerDashboard() {
                   Deploy Root
                 </button>
                 <button className="btn btn-primary" disabled={totalPayroll === 0} onClick={handleFundEscrow}>
-                  Fund Escrow (${totalPayroll.toFixed(2)})
+                  Fund Escrow ({totalPayroll.toFixed(2)} XLM)
                 </button>
               </div>
             </motion.div>
@@ -227,7 +227,7 @@ export default function EmployerDashboard() {
             {csvData.length > 0 && (
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-4)' }}>
-                  <span style={{ fontWeight: 'bold' }}>Parsed {csvData.length} workers (Total: ${totalPayroll.toFixed(2)})</span>
+                  <span style={{ fontWeight: 'bold' }}>Parsed {csvData.length} workers (Total: {totalPayroll.toFixed(2)} XLM)</span>
                   <button className="btn btn-primary" onClick={handleGenerateTree} disabled={isGenerating}>
                     {isGenerating ? 'Generating...' : 'Generate Merkle Tree'}
                   </button>
@@ -237,14 +237,14 @@ export default function EmployerDashboard() {
                     <thead style={{ background: 'var(--color-bg-raised)', position: 'sticky', top: 0 }}>
                       <tr>
                         <th style={{ padding: '12px', textAlign: 'left', borderBottom: '1px solid var(--color-border)' }}>Worker ID</th>
-                        <th style={{ padding: '12px', textAlign: 'right', borderBottom: '1px solid var(--color-border)' }}>Wage Amount (USD)</th>
+                        <th style={{ padding: '12px', textAlign: 'right', borderBottom: '1px solid var(--color-border)' }}>Wage Amount (XLM)</th>
                       </tr>
                     </thead>
                     <tbody>
                       {csvData.map((row, i) => (
                         <tr key={i} style={{ borderBottom: '1px solid var(--color-border)' }}>
                           <td style={{ padding: '10px 12px', fontFamily: 'var(--font-mono)' }}>{row.workerId}</td>
-                          <td style={{ padding: '10px 12px', textAlign: 'right' }}>${row.wageAmount.toFixed(2)}</td>
+                          <td style={{ padding: '10px 12px', textAlign: 'right' }}>{row.wageAmount.toFixed(2)}</td>
                         </tr>
                       ))}
                     </tbody>

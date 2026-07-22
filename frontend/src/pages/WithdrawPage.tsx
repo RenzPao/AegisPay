@@ -1,6 +1,6 @@
 /**
  * AegisPay — Withdraw Page
- * Allows connected workers to withdraw their claimed USDC to an external address
+ * Allows connected workers to withdraw their claimed XLM to an external address
  * or to a local anchor (Stellar → local currency via MoneyGram/Tempo etc.)
  * Design: Neumorphism × Glassmorphism
  */
@@ -22,7 +22,7 @@ type WithdrawMethod = 'onchain' | 'anchor';
 type WithdrawStatus = 'idle' | 'validating' | 'submitting' | 'success' | 'error';
 
 const ANCHOR_OPTIONS = [
-  { id: 'usdc',  label: 'USDC On-Chain',      desc: 'Send to any Stellar address', icon: '◎' },
+  { id: 'XLM',  label: 'XLM On-Chain',      desc: 'Send to any Stellar address', icon: '◎' },
   { id: 'moneygram', label: 'MoneyGram Ramp', desc: 'Cash pickup globally',        icon: '💵' },
   { id: 'tempo', label: 'Tempo Remittance',   desc: 'Bank transfer in EU/Asia',    icon: '🏦' },
   { id: 'tempo', label: 'Local Exchange',     desc: 'Convert to local currency',   icon: '🔄' },
@@ -92,7 +92,7 @@ function SuccessState({ txHash, amount, destination, onReset }: {
         Withdrawal Submitted
       </h2>
       <p style={{ color: 'var(--color-muted)', marginBottom: 28, lineHeight: 1.6 }}>
-        <strong style={{ color: 'var(--color-accent)' }}>{amount} USDC</strong> is on its way to{' '}
+        <strong style={{ color: 'var(--color-accent)' }}>{amount} XLM</strong> is on its way to{' '}
         <strong>{shortenAddress(destination)}</strong>
       </p>
 
@@ -126,7 +126,7 @@ function SuccessState({ txHash, amount, destination, onReset }: {
 
 // ── Main Withdraw Page ───────────────────────────────────────────────────────
 export default function WithdrawPage() {
-  const { connected, address, usdcBalance, xlmBalance, network } = useWalletContext();
+  const { connected, address, XLMBalance, xlmBalance, network } = useWalletContext();
 
   const [method, setMethod]         = useState<WithdrawMethod>('onchain');
   const [destination, setDest]      = useState('');
@@ -136,14 +136,14 @@ export default function WithdrawPage() {
   const [txHash, setTxHash]         = useState('');
   const [errorMsg, setErrorMsg]     = useState('');
 
-  const usdcFloat = parseFloat(usdcBalance ?? '0') || 0;
+  const XLMFloat = parseFloat(XLMBalance ?? '0') || 0;
   const amountFloat = parseFloat(amount) || 0;
 
   const validDest   = destination === '' || isValidStellarAddress(destination);
-  const validAmount = amountFloat > 0 && amountFloat <= usdcFloat;
+  const validAmount = amountFloat > 0 && amountFloat <= XLMFloat;
   const canSubmit   = isValidStellarAddress(destination) && validAmount && status === 'idle';
 
-  const handleMaxAmount = () => setAmount(usdcFloat > 0 ? usdcFloat.toFixed(7) : '');
+  const handleMaxAmount = () => setAmount(XLMFloat > 0 ? XLMFloat.toFixed(7) : '');
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
@@ -162,7 +162,7 @@ export default function WithdrawPage() {
           toAddress: destination,
           amount,
           memo: memo || undefined,
-          assetCode: 'USDC',
+          assetCode: 'XLM',
           network: network ?? 'TESTNET',
         }),
       });
@@ -214,7 +214,7 @@ export default function WithdrawPage() {
               Withdraw Wages
             </h1>
             <p style={{ color: 'var(--color-muted)', lineHeight: 1.6 }}>
-              Send your claimed USDC on-chain or off-ramp to local currency via an anchor.
+              Send your claimed XLM on-chain or off-ramp to local currency via an anchor.
             </p>
           </motion.div>
 
@@ -239,10 +239,10 @@ export default function WithdrawPage() {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div>
                     <div style={{ fontSize: '0.78rem', color: 'var(--color-muted)', marginBottom: 4 }}>
-                      Available USDC
+                      Available XLM
                     </div>
                     <div style={{ fontFamily: 'var(--font-heading)', fontSize: '1.8rem', color: 'var(--color-accent)' }}>
-                      {formatBalance(usdcBalance)} <span style={{ fontSize: '1rem', color: 'var(--color-muted)' }}>USDC</span>
+                      {formatBalance(XLMBalance)} <span style={{ fontSize: '1rem', color: 'var(--color-muted)' }}>XLM</span>
                     </div>
                   </div>
                   <div style={{ textAlign: 'right' }}>
@@ -306,7 +306,7 @@ export default function WithdrawPage() {
                   {/* Amount */}
                   <div className="form-group" style={{ marginBottom: 20 }}>
                     <label className="form-label" htmlFor="w-amount">
-                      Amount (USDC)
+                      Amount (XLM)
                       <button
                         type="button"
                         className="form-label-action"
@@ -322,14 +322,14 @@ export default function WithdrawPage() {
                       className={`form-input${amount && !validAmount ? ' error' : ''}`}
                       placeholder="0.00"
                       min="0.01"
-                      max={usdcFloat}
+                      max={XLMFloat}
                       step="0.01"
                       value={amount}
                       onChange={e => setAmount(e.target.value)}
                     />
                     {amount && !validAmount && (
                       <span className="form-hint error">
-                        {amountFloat <= 0 ? 'Amount must be greater than 0' : 'Insufficient USDC balance'}
+                        {amountFloat <= 0 ? 'Amount must be greater than 0' : 'Insufficient XLM balance'}
                       </span>
                     )}
                   </div>
@@ -362,7 +362,7 @@ export default function WithdrawPage() {
                   }}>
                     <Info size={15} style={{ color: 'var(--color-info)', marginTop: 2, flexShrink: 0 }} />
                     <p style={{ fontSize: '0.82rem', color: 'var(--color-info)', lineHeight: 1.55, margin: 0 }}>
-                      Anchor off-ramps convert your USDC to local currency. You'll be redirected to
+                      Anchor off-ramps convert your XLM to local currency. You'll be redirected to
                       complete identity verification and receive funds via cash pickup or bank transfer.
                     </p>
                   </div>
@@ -418,7 +418,7 @@ export default function WithdrawPage() {
                   {status === 'submitting' ? (
                     <><Loader2 size={18} className="spin" /> Processing…</>
                   ) : (
-                    <><Send size={18} /> Send {amountFloat > 0 ? `${amountFloat.toLocaleString()} USDC` : 'USDC'}</>
+                    <><Send size={18} /> Send {amountFloat > 0 ? `${amountFloat.toLocaleString()} XLM` : 'XLM'}</>
                   )}
                 </button>
               )}
