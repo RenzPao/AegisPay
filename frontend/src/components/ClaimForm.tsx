@@ -99,7 +99,7 @@ function SuccessView({ txHash, amount, onReset }: { txHash: string; amount: stri
 
       <h3 style={{ marginBottom: 'var(--space-3)', color: 'var(--color-foreground)' }}>Wage Claim Submitted!</h3>
       <p style={{ marginBottom: 'var(--space-6)', fontSize: '1rem' }}>
-        Your ZK proof has been verified on-chain. <strong style={{ color: 'var(--color-accent)' }}>${parseFloat(amount).toFixed(2)}</strong> is
+        Your ZK proof has been verified on-chain. <strong style={{ color: 'var(--color-accent)' }}>{(parseFloat(amount) / 1e7).toFixed(2)} XLM</strong> is
         being routed to your anchor via the Stellar SDEX.
       </p>
 
@@ -359,7 +359,7 @@ export function ClaimSection({ notify }: ClaimSectionProps) {
                               </div>
                               <div style={{ fontSize: '0.9rem', color: 'var(--color-muted)' }}>
                                 <span style={{ marginRight: 16 }}><strong>ID:</strong> {form.workerId}</span>
-                                <span><strong>Amount:</strong> ${(Number(form.wageAmount) / 1e7).toFixed(2)}</span>
+                                <span><strong>Amount:</strong> {(Number(form.wageAmount) / 1e7).toFixed(2)} XLM</span>
                               </div>
                             </div>
                             
@@ -486,7 +486,7 @@ export function ClaimSection({ notify }: ClaimSectionProps) {
                       <div style={{ marginTop: 'var(--space-6)', padding: 'var(--space-5)', background: 'var(--color-bg-raised)', borderRadius: 'var(--radius-md)', border: 'var(--glass-border)' }}>
                         <h4 style={{ marginBottom: 'var(--space-3)', fontSize: '1rem' }}>Claim Summary</h4>
                         {[
-                          { label: 'Amount', value: `$${parseFloat(form.wageAmount).toFixed(2)} → ${form.targetAsset}` },
+                          { label: 'Amount', value: `${(parseFloat(form.wageAmount) / 1e7).toFixed(2)} XLM → ${form.targetAsset}` },
                           { label: 'Destination', value: form.anchorAddress.slice(0, 8) + '...' + form.anchorAddress.slice(-8) },
                           { label: 'Network Fee', value: '0 XLM (covered by relayer)' },
                           { label: 'Privacy', value: 'Identity hidden ✓' },
