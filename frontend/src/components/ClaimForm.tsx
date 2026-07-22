@@ -4,7 +4,8 @@ import { Key, Hash, DollarSign, User, ChevronRight, CheckCircle, AlertCircle, Lo
 import type { ToastType } from './Toast';
 
 import { config } from '../lib/config';
-import { generateProof, fetchMerkleProof, hashToField, ProgressCallback } from '../lib/zkProver';
+import { generateProof, fetchMerkleProof, hashToField } from '../lib/zkProver';
+import type { ProgressCallback } from '../lib/zkProver';
 
 // ── Types ─────────────────────────────────────────────────────
 interface ClaimForm {
