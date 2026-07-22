@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Shield, Github, Twitter, Globe } from 'lucide-react';
+import { Shield, Code, MessageCircle, Globe } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 
 // ── Navbar ───────────────────────────────────────────────────
@@ -83,10 +83,10 @@ export function Footer() {
           </div>
           <div className="footer-links">
             <a href="#" className="footer-link" aria-label="GitHub repository">
-              <Github size={16} />
+              <Code size={16} />
             </a>
             <a href="#" className="footer-link" aria-label="Twitter / X">
-              <Twitter size={16} />
+              <MessageCircle size={16} />
             </a>
             <a href="#" className="footer-link" aria-label="Website">
               <Globe size={16} />
