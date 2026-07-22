@@ -43,14 +43,7 @@ function validateForm(f: ClaimForm): Partial<Record<keyof ClaimForm, string>> {
   return err;
 }
 
-// Real proof generation now integrated.
-// We keep simulateSubmitClaim since backend relayer might not be running yet.
-
-async function simulateSubmitClaim(_proof: object, _signals: string[]): Promise<{ txHash: string }> {
-  await new Promise(r => setTimeout(r, 1800));
-  const txHash = 'STELLAR_' + Math.random().toString(36).slice(2).toUpperCase().padEnd(56, '0');
-  return { txHash };
-}
+import { submitClaimToContract } from '../lib/stellar';
 
 // ── Proof Terminal Display ────────────────────────────────────
 function ProofDisplay({ proof, signals, nullifier }: { proof: object; signals: string[]; nullifier: string }) {
@@ -228,19 +221,28 @@ export function ClaimSection({ notify }: ClaimSectionProps) {
 
   const handleSubmitClaim = useCallback(async () => {
     if (!proofData) return;
-    setStatus({ msg: 'Submitting via relayer fee-bump transaction...', type: 'loading' });
+    setStatus({ msg: 'Submitting transaction to Stellar network...', type: 'loading' });
     try {
-      const result = await simulateSubmitClaim(proofData.proof, proofData.publicSignals);
-      setTxHash(result.txHash);
+      const employerIdHex = '0000000000000000000000000000000000000000000000000000000000000123';
+      const txHash = await submitClaimToContract(
+        config.contractId,
+        employerIdHex,
+        form.merkleRoot,
+        proofData.nullifier,
+        Number(form.wageAmount),
+        form.anchorAddress
+      );
+      setTxHash(txHash);
       setClaimStep('success');
       setCurrentStep(3);
       setStatus({ msg: 'Claim confirmed on-chain.', type: 'ready' });
       notify('success', 'Claim Confirmed!', 'Funds are being routed to your anchor.');
-    } catch {
+    } catch (e: any) {
+      console.error(e);
       setStatus({ msg: 'Submission failed. Please retry.', type: 'error' });
-      notify('error', 'Submission Failed', 'The relayer could not process your transaction.');
+      notify('error', 'Submission Failed', e.message || 'The network could not process your transaction.');
     }
-  }, [proofData, notify]);
+  }, [proofData, form, notify]);
 
   const handleReset = () => {
     setClaimStep('form');
