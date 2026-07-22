@@ -75,7 +75,7 @@ Unlike traditional crypto payroll solutions (like Sablier or standard multisig d
 * **Blockchain Integration:** `@stellar/stellar-sdk`, `@stellar/freighter-api`
 
 ### Live Contract (Testnet)
-![Testnet Contract](public/testnet.png)
+![Testnet Contract](public/testnet.png?v=2)
 * **Contract Address:** [`CANBQLRMKKQHC6XSTY6AWZQQKAAPI35P24GVKUFMTYRH54KLV25VKSCI`](https://stellar.expert/explorer/testnet/contract/CANBQLRMKKQHC6XSTY6AWZQQKAAPI35P24GVKUFMTYRH54KLV25VKSCI)
 
 ### Architecture
