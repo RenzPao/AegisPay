@@ -1,3 +1,5 @@
 node_modules/
 circuit_final.zkey
 *.ptau
+frontend/dist/
+frontend/.env
