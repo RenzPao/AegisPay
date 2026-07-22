@@ -23,7 +23,7 @@ export async function deployRootToContract(contractId: string, rootHex: string) 
     const operation = contract.call(
       'update_payroll_root',
       new StellarSdk.Address(publicKey).toScVal(),
-      StellarSdk.nativeToScVal(rootBuffer, { type: 'bytesN', size: 32 })
+      StellarSdk.nativeToScVal(rootBuffer) // Automatically infers ScVal.scvBytes
     );
 
     const tx = new StellarSdk.TransactionBuilder(account, {
@@ -97,6 +97,47 @@ export async function fundEscrowContract(contractId: string, amountUSD: number) 
     }
   } catch (error) {
     console.error("Error funding escrow:", error);
+    throw error;
+  }
+}
+
+// Testnet XLM Contract ID as a placeholder for USDC to simplify testing
+export const TESTNET_XLM_CONTRACT = 'CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC';
+
+export async function initializeContract(contractId: string, employerIdHex: string, rootHex: string) {
+  try {
+    await setAllowed();
+    const addrResult = await getAddress();
+    if (addrResult.error || !addrResult.address) throw new Error(addrResult.error || 'Failed to get Freighter address');
+    const publicKey = addrResult.address;
+    
+    const server = new StellarSdk.rpc.Server(RPC_URL);
+    const account = await server.getAccount(publicKey);
+    const contract = new StellarSdk.Contract(contractId);
+    
+    const employerIdBuffer = Buffer.from(employerIdHex.replace('0x', '').padStart(64, '0'), 'hex');
+    const rootBuffer = Buffer.from(rootHex.replace('0x', '').padStart(64, '0'), 'hex');
+
+    const operation = contract.call(
+      'initialize',
+      new StellarSdk.Address(publicKey).toScVal(),
+      StellarSdk.nativeToScVal(employerIdBuffer),
+      StellarSdk.nativeToScVal(rootBuffer),
+      new StellarSdk.Address(TESTNET_XLM_CONTRACT).toScVal()
+    );
+
+    const tx = new StellarSdk.TransactionBuilder(account, {
+      fee: "10000",
+      networkPassphrase: StellarSdk.Networks.TESTNET,
+    }).addOperation(operation).setTimeout(30).build();
+
+    const preparedTx = await server.prepareTransaction(tx);
+    const signedXdr = await signTransaction(preparedTx.toXDR(), { network: 'TESTNET' });
+    const signedTx = StellarSdk.TransactionBuilder.fromXDR(signedXdr, StellarSdk.Networks.TESTNET) as StellarSdk.Transaction;
+    const sendResponse = await server.sendTransaction(signedTx);
+    return sendResponse.hash;
+  } catch (error) {
+    console.error(error);
     throw error;
   }
 }

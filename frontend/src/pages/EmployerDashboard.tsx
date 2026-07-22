@@ -5,7 +5,7 @@ import { UploadCloud, FileText, CheckCircle, RefreshCcw, Database, Server, Downl
 import { config } from '../lib/config';
 import { generateRegistry } from '../lib/registry';
 import type { PayrollRegistry } from '../lib/registry';
-import { deployRootToContract, fundEscrowContract } from '../lib/stellar';
+import { deployRootToContract, fundEscrowContract, initializeContract } from '../lib/stellar';
 
 interface WorkerData {
   workerId: string;
@@ -90,6 +90,17 @@ export default function EmployerDashboard() {
     }
   };
 
+  const handleInitialize = async () => {
+    try {
+      const employerIdHex = '0000000000000000000000000000000000000000000000000000000000000123';
+      const rootHex = merkleRoot === '0x...' ? '0000000000000000000000000000000000000000000000000000000000000000' : merkleRoot;
+      await initializeContract(contractId, employerIdHex, rootHex);
+      alert('Contract Initialized Successfully!');
+    } catch (e: any) {
+      alert('Error initializing: ' + e.message);
+    }
+  };
+
   return (
     <>
       <Navbar activeSection="none" onNav={() => {}} />
@@ -146,6 +157,9 @@ export default function EmployerDashboard() {
                 </div>
               </div>
               <div style={{ display: 'flex', gap: 'var(--space-3)', flexDirection: 'column' }}>
+                <button className="btn btn-glass" onClick={handleInitialize} style={{ borderColor: 'var(--color-accent)' }}>
+                  Initialize Escrow
+                </button>
                 <button className="btn btn-glass" disabled={merkleRoot === '0x...'} onClick={handleDeployRoot}>
                   Deploy Root
                 </button>
