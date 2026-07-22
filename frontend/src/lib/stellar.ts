@@ -146,6 +146,21 @@ export async function initializeContract(contractId: string, employerIdHex: stri
   }
 }
 
+function createStructScVal(obj: Record<string, StellarSdk.xdr.ScVal>) {
+  const entries = Object.entries(obj).map(([key, val]) => {
+    return new StellarSdk.xdr.ScMapEntry({
+      key: StellarSdk.xdr.ScVal.scvSymbol(key),
+      val: val
+    });
+  });
+  entries.sort((a, b) => {
+    const keyA = a.key().sym().toString();
+    const keyB = b.key().sym().toString();
+    return keyA.localeCompare(keyB);
+  });
+  return StellarSdk.xdr.ScVal.scvMap(entries);
+}
+
 export async function submitClaimToContract(
   contractId: string,
   employerIdHex: string,
@@ -181,17 +196,17 @@ export async function submitClaimToContract(
        nullifierBuffer = Buffer.from(nullifierHex.replace('0x', '').padStart(64, '0'), 'hex');
     }
 
-    const proof = StellarSdk.nativeToScVal({
-      a: Buffer.alloc(64, 0),
-      b: Buffer.alloc(128, 0),
-      c: Buffer.alloc(64, 0)
+    const proof = createStructScVal({
+      a: StellarSdk.nativeToScVal(Buffer.alloc(64, 0)),
+      b: StellarSdk.nativeToScVal(Buffer.alloc(128, 0)),
+      c: StellarSdk.nativeToScVal(Buffer.alloc(64, 0))
     });
 
-    const publicInputs = StellarSdk.nativeToScVal({
+    const publicInputs = createStructScVal({
       claimed_amount: StellarSdk.nativeToScVal(Math.floor(claimedAmountStroops).toString(), { type: 'i128' }),
-      employer_id: employerIdBuffer,
-      merkle_root: merkleRootBuffer,
-      nullifier: nullifierBuffer
+      employer_id: StellarSdk.nativeToScVal(employerIdBuffer),
+      merkle_root: StellarSdk.nativeToScVal(merkleRootBuffer),
+      nullifier: StellarSdk.nativeToScVal(nullifierBuffer)
     });
 
     const operation = contract.call(
