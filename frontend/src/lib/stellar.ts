@@ -35,9 +35,10 @@ export async function deployRootToContract(contractId: string, rootHex: string) 
     .build();
 
     const preparedTx = await server.prepareTransaction(tx);
-    const signedXdr = await signTransaction(preparedTx.toXDR(), { networkPassphrase: StellarSdk.Networks.TESTNET });
+    const signResult = await signTransaction(preparedTx.toXDR(), { networkPassphrase: StellarSdk.Networks.TESTNET });
+    if (signResult.error) throw new Error(signResult.error);
     
-    const signedTx = StellarSdk.TransactionBuilder.fromXDR(signedXdr, StellarSdk.Networks.TESTNET) as StellarSdk.Transaction;
+    const signedTx = StellarSdk.TransactionBuilder.fromXDR(signResult.signedTxXdr, StellarSdk.Networks.TESTNET) as StellarSdk.Transaction;
     const sendResponse = await server.sendTransaction(signedTx);
     
     if (sendResponse.status === 'PENDING') {
@@ -84,9 +85,10 @@ export async function fundEscrowContract(contractId: string, amountUSD: number) 
     .build();
 
     const preparedTx = await server.prepareTransaction(tx);
-    const signedXdr = await signTransaction(preparedTx.toXDR(), { networkPassphrase: StellarSdk.Networks.TESTNET });
+    const signResult = await signTransaction(preparedTx.toXDR(), { networkPassphrase: StellarSdk.Networks.TESTNET });
+    if (signResult.error) throw new Error(signResult.error);
     
-    const signedTx = StellarSdk.TransactionBuilder.fromXDR(signedXdr, StellarSdk.Networks.TESTNET) as StellarSdk.Transaction;
+    const signedTx = StellarSdk.TransactionBuilder.fromXDR(signResult.signedTxXdr, StellarSdk.Networks.TESTNET) as StellarSdk.Transaction;
     const sendResponse = await server.sendTransaction(signedTx);
     
     if (sendResponse.status === 'PENDING') {
@@ -132,8 +134,10 @@ export async function initializeContract(contractId: string, employerIdHex: stri
     }).addOperation(operation).setTimeout(30).build();
 
     const preparedTx = await server.prepareTransaction(tx);
-    const signedXdr = await signTransaction(preparedTx.toXDR(), { networkPassphrase: StellarSdk.Networks.TESTNET });
-    const signedTx = StellarSdk.TransactionBuilder.fromXDR(signedXdr, StellarSdk.Networks.TESTNET) as StellarSdk.Transaction;
+    const signResult = await signTransaction(preparedTx.toXDR(), { networkPassphrase: StellarSdk.Networks.TESTNET });
+    if (signResult.error) throw new Error(signResult.error);
+    
+    const signedTx = StellarSdk.TransactionBuilder.fromXDR(signResult.signedTxXdr, StellarSdk.Networks.TESTNET) as StellarSdk.Transaction;
     const sendResponse = await server.sendTransaction(signedTx);
     return sendResponse.hash;
   } catch (error) {
