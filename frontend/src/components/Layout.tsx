@@ -1,20 +1,23 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Shield, Github, Twitter, Globe } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
 
 // ── Navbar ───────────────────────────────────────────────────
 interface NavbarProps { activeSection: string; onNav: (s: string) => void; }
 export function Navbar({ activeSection, onNav }: NavbarProps) {
+  const location = useLocation();
+  const isHome = location.pathname === '/';
   return (
     <nav className="navbar" aria-label="Primary navigation">
       <div className="navbar-inner">
         {/* Logo */}
-        <a href="#hero" className="nav-logo" onClick={() => onNav('hero')} aria-label="AegisPay home">
+        <Link to="/" className="nav-logo" onClick={() => isHome && onNav('hero')} aria-label="AegisPay home">
           <div className="nav-logo-icon" aria-hidden="true">
             <Shield size={20} color="#000" strokeWidth={2.5} />
           </div>
           <span className="nav-logo-text">AegisPay</span>
-        </a>
+        </Link>
 
         {/* Links */}
         <ul className="nav-links" role="list">
@@ -24,24 +27,41 @@ export function Navbar({ activeSection, onNav }: NavbarProps) {
             { id: 'claim', label: 'Claim Wages' },
           ].map(({ id, label }) => (
             <li key={id}>
-              <a
-                href={`#${id}`}
-                className={`nav-link${activeSection === id ? ' active' : ''}`}
-                onClick={(e) => { e.preventDefault(); onNav(id); document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' }); }}
-                aria-current={activeSection === id ? 'page' : undefined}
-              >
-                {label}
-              </a>
+              {isHome ? (
+                <a
+                  href={`#${id}`}
+                  className={`nav-link${activeSection === id ? ' active' : ''}`}
+                  onClick={(e) => { e.preventDefault(); onNav(id); document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' }); }}
+                  aria-current={activeSection === id ? 'page' : undefined}
+                >
+                  {label}
+                </a>
+              ) : (
+                <Link to={`/#${id}`} className="nav-link">
+                  {label}
+                </Link>
+              )}
             </li>
           ))}
+          <li>
+            <Link to="/employer" className={`nav-link${location.pathname === '/employer' ? ' active' : ''}`}>
+              Employer
+            </Link>
+          </li>
         </ul>
 
         {/* CTA */}
-        <a href="#claim" className="btn btn-primary nav-cta" style={{ padding: '10px 22px', fontSize: '0.9rem', minHeight: 40 }}
-          onClick={(e) => { e.preventDefault(); document.getElementById('claim')?.scrollIntoView({ behavior: 'smooth' }); }}
-        >
-          Claim Wages
-        </a>
+        {isHome ? (
+          <a href="#claim" className="btn btn-primary nav-cta" style={{ padding: '10px 22px', fontSize: '0.9rem', minHeight: 40 }}
+            onClick={(e) => { e.preventDefault(); document.getElementById('claim')?.scrollIntoView({ behavior: 'smooth' }); }}
+          >
+            Claim Wages
+          </a>
+        ) : (
+          <Link to="/#claim" className="btn btn-primary nav-cta" style={{ padding: '10px 22px', fontSize: '0.9rem', minHeight: 40 }}>
+            Claim Wages
+          </Link>
+        )}
       </div>
     </nav>
   );

@@ -3,6 +3,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Key, Hash, DollarSign, User, ChevronRight, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import type { ToastType } from './Toast';
 
+import { config } from '../lib/config';
+import { generateProof, fetchMerkleProof, hashToField, ProgressCallback } from '../lib/zkProver';
+
 // ── Types ─────────────────────────────────────────────────────
 interface ClaimForm {
   workerId:     string;
@@ -12,6 +15,7 @@ interface ClaimForm {
   employerId:   string;
   anchorAddress:string;
   targetAsset:  string;
+  proofServerUrl: string;
 }
 
 type ClaimStep = 'form' | 'generating' | 'submitting' | 'success';
@@ -42,24 +46,8 @@ function validateForm(f: ClaimForm): Partial<Record<keyof ClaimForm, string>> {
   return err;
 }
 
-async function simulateProofGeneration(form: ClaimForm): Promise<{ proof: object; nullifier: string; publicSignals: string[] }> {
-  // In production, this would call snarkjs.groth16.fullProve() with the zkey and wasm
-  // import * as snarkjs from 'snarkjs';
-  // const { proof, publicSignals } = await snarkjs.groth16.fullProve(inputs, '/circuit.wasm', '/circuit_final.zkey');
-  await new Promise(r => setTimeout(r, 2500)); // Simulate ~2.5s proof generation
-
-  // Simulate outputs
-  const nullifier = '0x' + Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
-  return {
-    proof: {
-      pi_a: ['0x1a3ebf...', '0xb24fc1...', '1'],
-      pi_b: [['0x2c...', '0x3f...'], ['0x8a...', '0x1d...'], ['1', '0']],
-      pi_c: ['0x7c119d...', '0x4de8aa...', '1'],
-    },
-    nullifier,
-    publicSignals: [form.merkleRoot, nullifier, String(Math.round(Number(form.wageAmount) * 1e7))],
-  };
-}
+// Real proof generation now integrated.
+// We keep simulateSubmitClaim since backend relayer might not be running yet.
 
 async function simulateSubmitClaim(_proof: object, _signals: string[]): Promise<{ txHash: string }> {
   await new Promise(r => setTimeout(r, 1800));
@@ -150,12 +138,13 @@ export function ClaimSection({ notify }: ClaimSectionProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [claimStep, setClaimStep] = useState<ClaimStep>('form');
   const [form, setForm] = useState<ClaimForm>({
-    workerId: '', wageAmount: '', secretSalt: '', merkleRoot: '', employerId: '', anchorAddress: '', targetAsset: 'USDC',
+    workerId: '', wageAmount: '', secretSalt: '', merkleRoot: '', employerId: '', anchorAddress: '', targetAsset: 'USDC', proofServerUrl: config.proofServerUrl
   });
   const [errors, setErrors] = useState<Partial<Record<keyof ClaimForm, string>>>({});
   const [proofData, setProofData] = useState<{ proof: object; nullifier: string; publicSignals: string[] } | null>(null);
   const [txHash, setTxHash] = useState('');
   const [status, setStatus] = useState<{ msg: string; type: 'idle' | 'loading' | 'ready' | 'error' }>({ msg: 'Enter your credentials to generate a proof', type: 'idle' });
+  const [progress, setProgress] = useState<{ wasm: number; zkey: number }>({ wasm: 0, zkey: 0 });
 
   const update = (field: keyof ClaimForm) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setForm(p => ({ ...p, [field]: e.target.value }));
@@ -174,19 +163,39 @@ export function ClaimSection({ notify }: ClaimSectionProps) {
     }
     setClaimStep('generating');
     setCurrentStep(1);
-    setStatus({ msg: 'Generating ZK-SNARK proof in browser...', type: 'loading' });
+    setProgress({ wasm: 0, zkey: 0 });
+    
     try {
-      const result = await simulateProofGeneration(form);
+      setStatus({ msg: 'Fetching Merkle proof from server...', type: 'loading' });
+      const merkleProof = await fetchMerkleProof(form.workerId, form.proofServerUrl);
+      
+      setStatus({ msg: 'Generating ZK-SNARK proof...', type: 'loading' });
+      const handleProgress: ProgressCallback = (file, loaded, total) => {
+        const percent = total > 0 ? Math.round((loaded / total) * 100) : 0;
+        setProgress(p => ({ ...p, [file]: percent }));
+      };
+      
+      const inputs = {
+        workerId: await hashToField(form.workerId),
+        wageAmount: BigInt(Math.round(Number(form.wageAmount) * 1e7)),
+        secretSalt: await hashToField(form.secretSalt),
+        employerId: await hashToField(form.employerId),
+        pathElements: merkleProof.pathElements,
+        pathIndices: merkleProof.pathIndices,
+        merkleRoot: BigInt(merkleProof.merkleRoot)
+      };
+
+      const result = await generateProof(inputs, handleProgress);
       setProofData(result);
       setClaimStep('submitting');
       setCurrentStep(2);
       setStatus({ msg: 'Proof generated. Ready to submit via relayer.', type: 'ready' });
       notify('success', 'Proof Generated', 'Your ZK-SNARK proof is ready. Review and submit.');
-    } catch {
+    } catch (err: any) {
       setClaimStep('form');
       setCurrentStep(0);
-      setStatus({ msg: 'Proof generation failed. Please retry.', type: 'error' });
-      notify('error', 'Proof Generation Failed', 'An error occurred during proof generation.');
+      setStatus({ msg: err.message || 'Proof generation failed. Please retry.', type: 'error' });
+      notify('error', 'Proof Generation Failed', err.message || 'An error occurred during proof generation.');
     }
   }, [form, notify]);
 
@@ -213,7 +222,7 @@ export function ClaimSection({ notify }: ClaimSectionProps) {
     setTxHash('');
     setErrors({});
     setStatus({ msg: 'Enter your credentials to generate a proof', type: 'idle' });
-    setForm({ workerId: '', wageAmount: '', secretSalt: '', merkleRoot: '', employerId: '', anchorAddress: '', targetAsset: 'USDC' });
+    setForm({ workerId: '', wageAmount: '', secretSalt: '', merkleRoot: '', employerId: '', anchorAddress: '', targetAsset: 'USDC', proofServerUrl: config.proofServerUrl });
   };
 
   return (
@@ -445,6 +454,20 @@ export function ClaimSection({ notify }: ClaimSectionProps) {
                           </select>
                           <span id="assetHint" className="input-helper">The fiat-anchored asset you want to receive</span>
                         </div>
+                        
+                        {/* Proof Server URL */}
+                        <div className="input-group form-full">
+                          <label className="input-label" htmlFor="proofServerUrl">Proof Server URL</label>
+                          <input
+                            id="proofServerUrl"
+                            className="input-field mono"
+                            type="text"
+                            value={form.proofServerUrl}
+                            onChange={update('proofServerUrl')}
+                            placeholder="http://localhost:3002"
+                            required
+                          />
+                        </div>
                       </div>
 
                       {/* Submit */}
@@ -479,9 +502,32 @@ export function ClaimSection({ notify }: ClaimSectionProps) {
                         aria-hidden="true"
                       />
                       <h3 style={{ marginBottom: 'var(--space-3)' }}>Running BN254 Circuit</h3>
-                      <p style={{ fontSize: '0.9rem' }}>Building your Groth16 proof. This takes approximately 2 seconds.</p>
+                      <p style={{ fontSize: '0.9rem' }}>Building your Groth16 proof locally.</p>
+                      
+                      {/* Progress Bars */}
+                      <div style={{ marginTop: 'var(--space-6)', maxWidth: 400, marginInline: 'auto', textAlign: 'left' }}>
+                        <div style={{ marginBottom: 'var(--space-3)' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: 4 }}>
+                            <span>circuit.wasm</span>
+                            <span>{progress.wasm}%</span>
+                          </div>
+                          <div style={{ width: '100%', height: 6, background: 'var(--color-bg-raised)', borderRadius: 3, overflow: 'hidden' }}>
+                            <div style={{ width: `${progress.wasm}%`, height: '100%', background: 'var(--color-accent)', transition: 'width 0.2s' }} />
+                          </div>
+                        </div>
+                        <div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: 4 }}>
+                            <span>circuit_final.zkey</span>
+                            <span>{progress.zkey}%</span>
+                          </div>
+                          <div style={{ width: '100%', height: 6, background: 'var(--color-bg-raised)', borderRadius: 3, overflow: 'hidden' }}>
+                            <div style={{ width: `${progress.zkey}%`, height: '100%', background: 'var(--color-accent)', transition: 'width 0.2s' }} />
+                          </div>
+                        </div>
+                      </div>
+
                       <div style={{ marginTop: 'var(--space-8)', display: 'flex', gap: 'var(--space-4)', justifyContent: 'center', flexWrap: 'wrap' }}>
-                        {['Computing witness', 'Building R1CS', 'Generating proof'].map((s, i) => (
+                        {['Fetching proof', 'Downloading keys', 'Generating proof'].map((s, i) => (
                           <motion.span
                             key={i}
                             className="badge badge-info"
