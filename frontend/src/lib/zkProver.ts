@@ -29,6 +29,11 @@ async function downloadWithProgress(url: string, onProgress: (loaded: number, to
     const response = await fetch(url);
     if (!response.ok) return null; // File missing
     
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('text/html')) {
+      return null; // Vite SPA fallback returned index.html instead of the actual file
+    }
+    
     const contentLength = response.headers.get('content-length');
     const total = contentLength ? parseInt(contentLength, 10) : 0;
     
