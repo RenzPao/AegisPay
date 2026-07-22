@@ -35,7 +35,7 @@ export async function deployRootToContract(contractId: string, rootHex: string) 
     .build();
 
     const preparedTx = await server.prepareTransaction(tx);
-    const signedXdr = await signTransaction(preparedTx.toXDR(), { network: 'TESTNET' });
+    const signedXdr = await signTransaction(preparedTx.toXDR(), { networkPassphrase: StellarSdk.Networks.TESTNET });
     
     const signedTx = StellarSdk.TransactionBuilder.fromXDR(signedXdr, StellarSdk.Networks.TESTNET) as StellarSdk.Transaction;
     const sendResponse = await server.sendTransaction(signedTx);
@@ -84,7 +84,7 @@ export async function fundEscrowContract(contractId: string, amountUSD: number) 
     .build();
 
     const preparedTx = await server.prepareTransaction(tx);
-    const signedXdr = await signTransaction(preparedTx.toXDR(), { network: 'TESTNET' });
+    const signedXdr = await signTransaction(preparedTx.toXDR(), { networkPassphrase: StellarSdk.Networks.TESTNET });
     
     const signedTx = StellarSdk.TransactionBuilder.fromXDR(signedXdr, StellarSdk.Networks.TESTNET) as StellarSdk.Transaction;
     const sendResponse = await server.sendTransaction(signedTx);
@@ -132,7 +132,7 @@ export async function initializeContract(contractId: string, employerIdHex: stri
     }).addOperation(operation).setTimeout(30).build();
 
     const preparedTx = await server.prepareTransaction(tx);
-    const signedXdr = await signTransaction(preparedTx.toXDR(), { network: 'TESTNET' });
+    const signedXdr = await signTransaction(preparedTx.toXDR(), { networkPassphrase: StellarSdk.Networks.TESTNET });
     const signedTx = StellarSdk.TransactionBuilder.fromXDR(signedXdr, StellarSdk.Networks.TESTNET) as StellarSdk.Transaction;
     const sendResponse = await server.sendTransaction(signedTx);
     return sendResponse.hash;
