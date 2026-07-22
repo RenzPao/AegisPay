@@ -74,6 +74,10 @@ Unlike traditional crypto payroll solutions (like Sablier or standard multisig d
 * **Smart Contract:** Rust (Soroban SDK)
 * **Blockchain Integration:** `@stellar/stellar-sdk`, `@stellar/freighter-api`
 
+### Live Contract (Testnet)
+![Testnet Contract](public/testnet.png)
+* **Contract Address:** [`CANBQLRMKKQHC6XSTY6AWZQQKAAPI35P24GVKUFMTYRH54KLV25VKSCI`](https://stellar.expert/explorer/testnet/contract/CANBQLRMKKQHC6XSTY6AWZQQKAAPI35P24GVKUFMTYRH54KLV25VKSCI)
+
 ### Architecture
 
 ```mermaid
