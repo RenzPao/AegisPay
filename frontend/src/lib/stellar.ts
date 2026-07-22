@@ -64,7 +64,7 @@ export async function fundEscrowContract(contractId: string, amountUSD: number) 
     const operation = contract.call(
       'deposit',
       new StellarSdk.Address(publicKey).toScVal(),
-      StellarSdk.nativeToScVal(amountStroops, { type: 'i128' })
+      StellarSdk.nativeToScVal(amountStroops.toString(), { type: 'i128' })
     );
 
     const tx = new StellarSdk.TransactionBuilder(account, {
