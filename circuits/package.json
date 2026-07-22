@@ -1,0 +1,8 @@
+{
+  "name": "aegispay-circuits",
+  "version": "1.0.0",
+  "description": "ZK Circuits for AegisPay",
+  "dependencies": {
+    "circomlib": "^2.0.5"
+  }
+}
