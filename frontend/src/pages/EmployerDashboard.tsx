@@ -71,6 +71,35 @@ export default function EmployerDashboard() {
     URL.revokeObjectURL(url);
   };
 
+  const handleDownloadClaimFile = (workerId: string) => {
+    if (!registry) return;
+    const worker = registry.workers.find(w => w.workerId === workerId);
+    if (!worker) return;
+    const proof = registry.proofs[workerId];
+    
+    const claimData = {
+      employerId: registry.employerId,
+      employerIdBigInt: registry.employerIdBigInt.toString(),
+      merkleRoot: registry.merkleRoot,
+      workerId: worker.workerId,
+      workerIdBigInt: worker.workerIdBigInt.toString(),
+      wageAmount: worker.wageAmount.toString(),
+      wageAmountFloat: (Number(worker.wageAmount) / 1e7).toFixed(2),
+      secretSalt: worker.secretSalt.toString(),
+      pathElements: proof.pathElements,
+      pathIndices: proof.pathIndices,
+      nullifier: proof.nullifier
+    };
+    
+    const blob = new Blob([JSON.stringify(claimData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `claim_${workerId}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const handleDeployRoot = async () => {
     try {
       await deployRootToContract(contractId, merkleRoot);
@@ -228,44 +257,45 @@ export default function EmployerDashboard() {
           {/* Panel 4: Registry Status */}
           <motion.div className="neu-card glass-card" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-4)' }}>
-              <h3 style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '1.2rem' }}><CheckCircle size={20} /> Proof Server Registry</h3>
+              <h3 style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '1.2rem' }}><CheckCircle size={20} /> Claim Files</h3>
               <button className="btn btn-glass" onClick={handleExportJSON} disabled={!registry} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', fontSize: '0.9rem' }}>
-                <Download size={16} /> Export JSON
+                <Download size={16} /> Export Master Registry
               </button>
             </div>
             
-            <div className="proof-terminal" style={{ marginBottom: 'var(--space-4)' }}>
-               <div className="proof-terminal-header">
-                  <span className="terminal-dot red" /><span className="terminal-dot yellow" /><span className="terminal-dot green" />
-                  <span style={{ marginLeft: 8, fontSize: '0.78rem', color: 'var(--color-muted)', fontFamily: 'var(--font-mono)' }}>Start Proof Server</span>
-               </div>
-               <div className="proof-terminal-body">
-                  <div><span className="comment">// Run this command in the tools/proofServer directory to serve proofs</span></div>
-                  <div><span className="label">$ </span><span className="value">node src/index.js --registry=registry.json</span></div>
-               </div>
-            </div>
+            <p style={{ fontSize: '0.9rem', color: 'var(--color-muted)', marginBottom: 'var(--space-4)' }}>
+              Download the individual claim files and send them to your employees. They will use this file on the Employee Dashboard to generate their Zero-Knowledge proof and claim their wages.
+            </p>
 
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
               <thead>
                 <tr>
                   <th style={{ padding: '12px', textAlign: 'left', borderBottom: '1px solid var(--color-border)' }}>Worker ID</th>
-                  <th style={{ padding: '12px', textAlign: 'left', borderBottom: '1px solid var(--color-border)' }}>Status</th>
+                  <th style={{ padding: '12px', textAlign: 'right', borderBottom: '1px solid var(--color-border)' }}>Action</th>
                 </tr>
               </thead>
               <tbody>
                 {csvData.length === 0 ? (
                   <tr><td colSpan={2} style={{ padding: '16px', textAlign: 'center', color: 'var(--color-muted)' }}>No registry generated yet.</td></tr>
                 ) : (
-                  csvData.slice(0, 5).map((row, i) => (
+                  csvData.map((row, i) => (
                     <tr key={i} style={{ borderBottom: '1px solid var(--color-border)' }}>
                       <td style={{ padding: '10px 12px', fontFamily: 'var(--font-mono)' }}>{row.workerId}</td>
-                      <td style={{ padding: '10px 12px' }}><span className="badge badge-accent" style={{ background: 'transparent', border: '1px solid var(--color-accent)' }}>Unclaimed</span></td>
+                      <td style={{ padding: '10px 12px', textAlign: 'right' }}>
+                        <button 
+                          className="btn btn-outline" 
+                          onClick={() => handleDownloadClaimFile(row.workerId)} 
+                          disabled={!registry}
+                          style={{ padding: '4px 12px', fontSize: '0.8rem', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                        >
+                          <Download size={14} /> Claim File
+                        </button>
+                      </td>
                     </tr>
                   ))
                 )}
               </tbody>
             </table>
-            {csvData.length > 5 && <div style={{ textAlign: 'center', padding: '12px', fontSize: '0.85rem', color: 'var(--color-muted)' }}>+ {csvData.length - 5} more workers</div>}
           </motion.div>
 
         </div>

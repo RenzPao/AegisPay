@@ -63,7 +63,8 @@ export async function generateRegistry(
     });
   }
 
-  const merkleRoot = tree.getRoot().toString();
+  const merkleRootBigInt = tree.getRoot();
+  const merkleRoot = "0x" + merkleRootBigInt.toString(16).padStart(64, '0');
   const proofs: Record<string, any> = {};
 
   for (const worker of workers) {

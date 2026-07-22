@@ -14,9 +14,11 @@ interface ClaimForm {
   secretSalt:   string;
   merkleRoot:   string;
   employerId:   string;
+  pathElements: string[];
+  pathIndices:  number[];
+  nullifier:    string;
   anchorAddress:string;
   targetAsset:  string;
-  proofServerUrl: string;
 }
 
 type ClaimStep = 'form' | 'generating' | 'submitting' | 'success';
@@ -36,14 +38,8 @@ const STEPS = [
 // ── Helpers ───────────────────────────────────────────────────
 function validateForm(f: ClaimForm): Partial<Record<keyof ClaimForm, string>> {
   const err: Partial<Record<keyof ClaimForm, string>> = {};
-  if (!f.workerId.trim())   err.workerId   = 'Worker ID is required';
-  if (!f.wageAmount.trim()) err.wageAmount = 'Wage amount is required';
-  else if (isNaN(Number(f.wageAmount)) || Number(f.wageAmount) <= 0) err.wageAmount = 'Enter a valid amount greater than 0';
-  if (!f.secretSalt.trim()) err.secretSalt = 'Secret salt is required';
-  else if (f.secretSalt.length < 12) err.secretSalt = 'Salt must be at least 12 characters';
-  if (!f.merkleRoot.trim()) err.merkleRoot = 'Merkle root is required';
-  if (!f.employerId.trim()) err.employerId = 'Employer ID is required';
   if (!f.anchorAddress.trim()) err.anchorAddress = 'Anchor address is required';
+  if (!f.workerId || !f.merkleRoot || f.pathElements.length === 0) err.workerId = 'Invalid or missing claim file data';
   return err;
 }
 
@@ -138,14 +134,47 @@ function SuccessView({ txHash, amount, onReset }: { txHash: string; amount: stri
 export function ClaimSection({ notify }: ClaimSectionProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [claimStep, setClaimStep] = useState<ClaimStep>('form');
+  const [claimFileUploaded, setClaimFileUploaded] = useState(false);
   const [form, setForm] = useState<ClaimForm>({
-    workerId: '', wageAmount: '', secretSalt: '', merkleRoot: '', employerId: '', anchorAddress: '', targetAsset: 'USDC', proofServerUrl: config.proofServerUrl
+    workerId: '', wageAmount: '', secretSalt: '', merkleRoot: '', employerId: '', 
+    pathElements: [], pathIndices: [], nullifier: '',
+    anchorAddress: '', targetAsset: 'USDC'
   });
   const [errors, setErrors] = useState<Partial<Record<keyof ClaimForm, string>>>({});
   const [proofData, setProofData] = useState<{ proof: object; nullifier: string; publicSignals: string[] } | null>(null);
   const [txHash, setTxHash] = useState('');
-  const [status, setStatus] = useState<{ msg: string; type: 'idle' | 'loading' | 'ready' | 'error' }>({ msg: 'Enter your credentials to generate a proof', type: 'idle' });
+  const [status, setStatus] = useState<{ msg: string; type: 'idle' | 'loading' | 'ready' | 'error' }>({ msg: 'Upload your claim file to begin', type: 'idle' });
   const [progress, setProgress] = useState<{ wasm: number; zkey: number }>({ wasm: 0, zkey: 0 });
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      try {
+        const text = evt.target?.result as string;
+        const data = JSON.parse(text);
+        if (!data.workerId || !data.pathElements) throw new Error('Invalid format');
+        
+        setForm(prev => ({
+          ...prev,
+          workerId: data.workerId,
+          wageAmount: data.wageAmount,
+          secretSalt: data.secretSalt,
+          merkleRoot: data.merkleRoot,
+          employerId: data.employerId,
+          pathElements: data.pathElements,
+          pathIndices: data.pathIndices,
+          nullifier: data.nullifier
+        }));
+        setClaimFileUploaded(true);
+        setStatus({ msg: 'Claim file loaded. Ready to generate proof.', type: 'ready' });
+      } catch (e) {
+        notify('error', 'Invalid File', 'Could not parse the claim file.');
+      }
+    };
+    reader.readAsText(file);
+  };
 
   const update = (field: keyof ClaimForm) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setForm(p => ({ ...p, [field]: e.target.value }));
@@ -167,9 +196,6 @@ export function ClaimSection({ notify }: ClaimSectionProps) {
     setProgress({ wasm: 0, zkey: 0 });
     
     try {
-      setStatus({ msg: 'Fetching Merkle proof from server...', type: 'loading' });
-      const merkleProof = await fetchMerkleProof(form.workerId, form.proofServerUrl);
-      
       setStatus({ msg: 'Generating ZK-SNARK proof...', type: 'loading' });
       const handleProgress: ProgressCallback = (file, loaded, total) => {
         const percent = total > 0 ? Math.round((loaded / total) * 100) : 0;
@@ -178,12 +204,12 @@ export function ClaimSection({ notify }: ClaimSectionProps) {
       
       const inputs = {
         workerId: await hashToField(form.workerId),
-        wageAmount: BigInt(Math.round(Number(form.wageAmount) * 1e7)),
-        secretSalt: await hashToField(form.secretSalt),
-        employerId: await hashToField(form.employerId),
-        pathElements: merkleProof.pathElements,
-        pathIndices: merkleProof.pathIndices,
-        merkleRoot: BigInt(merkleProof.merkleRoot)
+        wageAmount: BigInt(form.wageAmount),
+        secretSalt: BigInt(form.secretSalt),
+        employerId: await hashToField(form.employerId), // or BigInt if already parsed, depending on claim file format
+        pathElements: form.pathElements.map(x => BigInt(x)),
+        pathIndices: form.pathIndices,
+        merkleRoot: BigInt(form.merkleRoot)
       };
 
       const result = await generateProof(inputs, handleProgress);
@@ -222,8 +248,9 @@ export function ClaimSection({ notify }: ClaimSectionProps) {
     setProofData(null);
     setTxHash('');
     setErrors({});
-    setStatus({ msg: 'Enter your credentials to generate a proof', type: 'idle' });
-    setForm({ workerId: '', wageAmount: '', secretSalt: '', merkleRoot: '', employerId: '', anchorAddress: '', targetAsset: 'USDC', proofServerUrl: config.proofServerUrl });
+    setClaimFileUploaded(false);
+    setStatus({ msg: 'Upload your claim file to begin', type: 'idle' });
+    setForm({ workerId: '', wageAmount: '', secretSalt: '', merkleRoot: '', employerId: '', anchorAddress: '', targetAsset: 'USDC', pathElements: [], pathIndices: [], nullifier: '' });
   };
 
   return (
@@ -299,176 +326,84 @@ export function ClaimSection({ notify }: ClaimSectionProps) {
                       aria-label="Wage claim form"
                     >
                       <div className="form-grid">
-                        {/* Worker ID */}
-                        <div className="input-group">
-                          <label className="input-label" htmlFor="workerId">
-                            Worker ID <span className="required" aria-hidden="true">*</span>
-                          </label>
-                          <input
-                            id="workerId"
-                            className={`input-field mono${errors.workerId ? ' input-error' : ''}`}
-                            type="text"
-                            value={form.workerId}
-                            onChange={update('workerId')}
-                            placeholder="e.g. WORKER_001"
-                            required
-                            aria-required="true"
-                            aria-describedby={errors.workerId ? 'workerIdErr' : 'workerIdHint'}
-                            autoComplete="off"
-                          />
-                          {errors.workerId ? (
-                            <span id="workerIdErr" className="input-error-msg" role="alert">{errors.workerId}</span>
-                          ) : (
-                            <span id="workerIdHint" className="input-helper">Your unique payroll identifier</span>
-                          )}
-                        </div>
-
-                        {/* Wage Amount */}
-                        <div className="input-group">
-                          <label className="input-label" htmlFor="wageAmount">
-                            Wage Amount (USD) <span className="required" aria-hidden="true">*</span>
-                          </label>
-                          <input
-                            id="wageAmount"
-                            className={`input-field${errors.wageAmount ? ' input-error' : ''}`}
-                            type="number"
-                            inputMode="decimal"
-                            min="0.01"
-                            step="0.01"
-                            value={form.wageAmount}
-                            onChange={update('wageAmount')}
-                            placeholder="e.g. 500.00"
-                            required
-                            aria-required="true"
-                            aria-describedby={errors.wageAmount ? 'wageErr' : undefined}
-                          />
-                          {errors.wageAmount && <span id="wageErr" className="input-error-msg" role="alert">{errors.wageAmount}</span>}
-                        </div>
-
-                        {/* Secret Salt */}
-                        <div className="input-group form-full">
-                          <label className="input-label" htmlFor="secretSalt">
-                            Secret Salt <span className="required" aria-hidden="true">*</span>
-                          </label>
-                          <input
-                            id="secretSalt"
-                            className={`input-field mono${errors.secretSalt ? ' input-error' : ''}`}
-                            type="password"
-                            value={form.secretSalt}
-                            onChange={update('secretSalt')}
-                            placeholder="A secret phrase known only to you (min 12 chars)"
-                            required
-                            aria-required="true"
-                            aria-describedby={errors.secretSalt ? 'saltErr' : 'saltHint'}
-                            autoComplete="new-password"
-                          />
-                          {errors.secretSalt ? (
-                            <span id="saltErr" className="input-error-msg" role="alert">{errors.secretSalt}</span>
-                          ) : (
-                            <span id="saltHint" className="input-helper">
-                              <Key size={12} style={{ display: 'inline', marginRight: 4 }} aria-hidden="true" />
-                              Never shared. Used to generate your unique nullifier and commitment.
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Merkle Root */}
-                        <div className="input-group">
-                          <label className="input-label" htmlFor="merkleRoot">
-                            Payroll Merkle Root <span className="required" aria-hidden="true">*</span>
-                          </label>
-                          <input
-                            id="merkleRoot"
-                            className={`input-field mono${errors.merkleRoot ? ' input-error' : ''}`}
-                            type="text"
-                            value={form.merkleRoot}
-                            onChange={update('merkleRoot')}
-                            placeholder="0x21888cfea..."
-                            required
-                            aria-required="true"
-                            aria-describedby={errors.merkleRoot ? 'rootErr' : 'rootHint'}
-                          />
-                          {errors.merkleRoot ? (
-                            <span id="rootErr" className="input-error-msg" role="alert">{errors.merkleRoot}</span>
-                          ) : (
-                            <span id="rootHint" className="input-helper">Provided by your employer or the AegisPay dashboard</span>
-                          )}
-                        </div>
-
-                        {/* Employer ID */}
-                        <div className="input-group">
-                          <label className="input-label" htmlFor="employerId">
-                            Employer ID <span className="required" aria-hidden="true">*</span>
-                          </label>
-                          <input
-                            id="employerId"
-                            className={`input-field mono${errors.employerId ? ' input-error' : ''}`}
-                            type="text"
-                            value={form.employerId}
-                            onChange={update('employerId')}
-                            placeholder="e.g. EMPLOYER_XYZ"
-                            required
-                            aria-required="true"
-                            aria-describedby={errors.employerId ? 'empErr' : undefined}
-                          />
-                          {errors.employerId && <span id="empErr" className="input-error-msg" role="alert">{errors.employerId}</span>}
-                        </div>
-
-                        {/* Anchor Address */}
-                        <div className="input-group">
-                          <label className="input-label" htmlFor="anchorAddress">
-                            Anchor Deposit Address <span className="required" aria-hidden="true">*</span>
-                          </label>
-                          <input
-                            id="anchorAddress"
-                            className={`input-field mono${errors.anchorAddress ? ' input-error' : ''}`}
-                            type="text"
-                            value={form.anchorAddress}
-                            onChange={update('anchorAddress')}
-                            placeholder="G..."
-                            required
-                            aria-required="true"
-                            aria-describedby={errors.anchorAddress ? 'anchorErr' : 'anchorHint'}
-                          />
-                          {errors.anchorAddress ? (
-                            <span id="anchorErr" className="input-error-msg" role="alert">{errors.anchorAddress}</span>
-                          ) : (
-                            <span id="anchorHint" className="input-helper">Your local SEP-31 anchor's Stellar deposit address</span>
-                          )}
-                        </div>
-
-                        {/* Target Asset */}
-                        <div className="input-group">
-                          <label className="input-label" htmlFor="targetAsset">Target Asset</label>
-                          <select
-                            id="targetAsset"
-                            className="input-field"
-                            value={form.targetAsset}
-                            onChange={update('targetAsset')}
-                            aria-describedby="assetHint"
-                          >
-                            <option value="USDC">USDC (US Dollar)</option>
-                            <option value="EURC">EURC (Euro)</option>
-                            <option value="NGNC">NGNC (Nigerian Naira)</option>
-                            <option value="BRLT">BRLT (Brazilian Real)</option>
-                            <option value="PHPC">PHPC (Philippine Peso)</option>
-                          </select>
-                          <span id="assetHint" className="input-helper">The fiat-anchored asset you want to receive</span>
-                        </div>
                         
-                        {/* Proof Server URL */}
-                        <div className="input-group form-full">
-                          <label className="input-label" htmlFor="proofServerUrl">Proof Server URL</label>
-                          <input
-                            id="proofServerUrl"
-                            className="input-field mono"
-                            type="text"
-                            value={form.proofServerUrl}
-                            onChange={update('proofServerUrl')}
-                            placeholder="http://localhost:3002"
-                            required
-                          />
-                        </div>
+                        {!claimFileUploaded ? (
+                          <div style={{ 
+                            gridColumn: '1 / -1',
+                            border: '2px dashed var(--color-border)', 
+                            borderRadius: 'var(--radius-lg)', 
+                            padding: 'var(--space-8)', 
+                            textAlign: 'center',
+                            background: 'var(--color-bg-raised)',
+                            position: 'relative'
+                          }}>
+                            <input 
+                              type="file" 
+                              accept=".json" 
+                              onChange={handleFileUpload}
+                              style={{ opacity: 0, position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', cursor: 'pointer' }}
+                              aria-label="Upload Claim File"
+                            />
+                            <div style={{ fontSize: 40, marginBottom: 12 }}>📄</div>
+                            <p style={{ fontWeight: 'bold', marginBottom: 4 }}>Upload Claim File (.json)</p>
+                            <p style={{ fontSize: '0.85rem', color: 'var(--color-muted)' }}>Drag and drop the file provided by your employer.</p>
+                          </div>
+                        ) : (
+                          <>
+                            {/* Worker Info Preview */}
+                            <div style={{ gridColumn: '1 / -1', padding: '16px', background: 'rgba(34,197,94,0.05)', borderRadius: 'var(--radius-md)', border: '1px solid rgba(34,197,94,0.2)' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--color-accent)', fontWeight: 'bold', marginBottom: 8 }}>
+                                <CheckCircle size={16} /> Claim File Loaded Successfully
+                              </div>
+                              <div style={{ fontSize: '0.9rem', color: 'var(--color-muted)' }}>
+                                <span style={{ marginRight: 16 }}><strong>ID:</strong> {form.workerId}</span>
+                                <span><strong>Amount:</strong> ${(Number(form.wageAmount) / 1e7).toFixed(2)}</span>
+                              </div>
+                            </div>
+                            
+                            {/* Anchor Address */}
+                            <div className="input-group">
+                              <label className="input-label" htmlFor="anchorAddress">
+                                Anchor Deposit Address <span className="required" aria-hidden="true">*</span>
+                              </label>
+                              <input
+                                id="anchorAddress"
+                                className={`input-field mono${errors.anchorAddress ? ' input-error' : ''}`}
+                                type="text"
+                                value={form.anchorAddress}
+                                onChange={update('anchorAddress')}
+                                placeholder="G..."
+                                required
+                                aria-required="true"
+                                aria-describedby={errors.anchorAddress ? 'anchorErr' : 'anchorHint'}
+                              />
+                              {errors.anchorAddress ? (
+                                <span id="anchorErr" className="input-error-msg" role="alert">{errors.anchorAddress}</span>
+                              ) : (
+                                <span id="anchorHint" className="input-helper">Your local SEP-31 anchor's Stellar deposit address</span>
+                              )}
+                            </div>
+
+                            {/* Target Asset */}
+                            <div className="input-group">
+                              <label className="input-label" htmlFor="targetAsset">Target Asset</label>
+                              <select
+                                id="targetAsset"
+                                className="input-field"
+                                value={form.targetAsset}
+                                onChange={update('targetAsset')}
+                                aria-describedby="assetHint"
+                              >
+                                <option value="USDC">USDC (US Dollar)</option>
+                                <option value="EURC">EURC (Euro)</option>
+                                <option value="NGNC">NGNC (Nigerian Naira)</option>
+                                <option value="BRLT">BRLT (Brazilian Real)</option>
+                                <option value="PHPC">PHPC (Philippine Peso)</option>
+                              </select>
+                              <span id="assetHint" className="input-helper">The fiat-anchored asset you want to receive</span>
+                            </div>
+                          </>
+                        )}
                       </div>
 
                       {/* Submit */}
@@ -477,6 +412,7 @@ export function ClaimSection({ notify }: ClaimSectionProps) {
                         className="btn btn-primary"
                         style={{ width: '100%', marginTop: 'var(--space-3)', fontSize: '1.05rem', padding: '14px' }}
                         aria-label="Generate zero-knowledge proof"
+                        disabled={!claimFileUploaded}
                       >
                         <Hash size={18} aria-hidden="true" />
                         Generate ZK Proof
