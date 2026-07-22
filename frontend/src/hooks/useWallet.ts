@@ -5,14 +5,13 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import {
-  WalletState,
   INITIAL_WALLET_STATE,
   connectWallet,
   fetchBalances,
   getConnectedAddress,
-  NetworkType,
   checkFreighterInstalled,
 } from '../lib/wallet';
+import type { WalletState, NetworkType } from '../lib/wallet';
 
 export function useWallet() {
   const [state, setState] = useState<WalletState>(INITIAL_WALLET_STATE);
