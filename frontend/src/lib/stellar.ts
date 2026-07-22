@@ -1,12 +1,16 @@
 import * as StellarSdk from '@stellar/stellar-sdk';
-import { requestAccess, signTransaction, setAllowed } from '@stellar/freighter-api';
+import { getAddress, signTransaction, setAllowed } from '@stellar/freighter-api';
 
 const RPC_URL = 'https://soroban-testnet.stellar.org';
 
 export async function deployRootToContract(contractId: string, rootHex: string) {
   try {
     await setAllowed();
-    const publicKey = await requestAccess();
+    const addrResult = await getAddress();
+    if (addrResult.error || !addrResult.address) {
+      throw new Error(addrResult.error || 'Failed to get Freighter address');
+    }
+    const publicKey = addrResult.address;
     
     const server = new StellarSdk.rpc.Server(RPC_URL);
     const account = await server.getAccount(publicKey);
@@ -51,7 +55,11 @@ export async function deployRootToContract(contractId: string, rootHex: string) 
 export async function fundEscrowContract(contractId: string, amountUSD: number) {
   try {
     await setAllowed();
-    const publicKey = await requestAccess();
+    const addrResult = await getAddress();
+    if (addrResult.error || !addrResult.address) {
+      throw new Error(addrResult.error || 'Failed to get Freighter address');
+    }
+    const publicKey = addrResult.address;
     
     const server = new StellarSdk.rpc.Server(RPC_URL);
     const account = await server.getAccount(publicKey);
