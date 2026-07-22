@@ -138,7 +138,7 @@ export function ClaimSection({ notify }: ClaimSectionProps) {
   const [form, setForm] = useState<ClaimForm>({
     workerId: '', wageAmount: '', secretSalt: '', merkleRoot: '', employerId: '', 
     pathElements: [], pathIndices: [], nullifier: '',
-    anchorAddress: '', targetAsset: 'USDC'
+    anchorAddress: '', targetAsset: 'XLM'
   });
   const [errors, setErrors] = useState<Partial<Record<keyof ClaimForm, string>>>({});
   const [proofData, setProofData] = useState<{ proof: object; nullifier: string; publicSignals: string[] } | null>(null);
@@ -250,7 +250,7 @@ export function ClaimSection({ notify }: ClaimSectionProps) {
     setErrors({});
     setClaimFileUploaded(false);
     setStatus({ msg: 'Upload your claim file to begin', type: 'idle' });
-    setForm({ workerId: '', wageAmount: '', secretSalt: '', merkleRoot: '', employerId: '', anchorAddress: '', targetAsset: 'USDC', pathElements: [], pathIndices: [], nullifier: '' });
+    setForm({ workerId: '', wageAmount: '', secretSalt: '', merkleRoot: '', employerId: '', anchorAddress: '', targetAsset: 'XLM', pathElements: [], pathIndices: [], nullifier: '' });
   };
 
   return (
@@ -394,13 +394,9 @@ export function ClaimSection({ notify }: ClaimSectionProps) {
                                 onChange={update('targetAsset')}
                                 aria-describedby="assetHint"
                               >
-                                <option value="USDC">USDC (US Dollar)</option>
-                                <option value="EURC">EURC (Euro)</option>
-                                <option value="NGNC">NGNC (Nigerian Naira)</option>
-                                <option value="BRLT">BRLT (Brazilian Real)</option>
-                                <option value="PHPC">PHPC (Philippine Peso)</option>
+                                <option value="XLM">XLM (Stellar Lumens)</option>
                               </select>
-                              <span id="assetHint" className="input-helper">The fiat-anchored asset you want to receive</span>
+                              <span id="assetHint" className="input-helper">The asset you will receive</span>
                             </div>
                           </>
                         )}
