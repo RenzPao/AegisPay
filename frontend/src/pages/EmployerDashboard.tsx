@@ -3,6 +3,8 @@ import { motion } from 'framer-motion';
 import { Navbar, Footer } from '../components/Layout';
 import { UploadCloud, FileText, CheckCircle, RefreshCcw, Database, Server, Download } from 'lucide-react';
 import { config } from '../lib/config';
+import { generateRegistry, PayrollRegistry } from '../lib/registry';
+import { deployRootToContract, fundEscrowContract } from '../lib/stellar';
 
 interface WorkerData {
   workerId: string;
@@ -17,6 +19,7 @@ export default function EmployerDashboard() {
   const [csvData, setCsvData] = useState<WorkerData[]>([]);
   const [totalPayroll, setTotalPayroll] = useState(0);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [registry, setRegistry] = useState<PayrollRegistry | null>(null);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -41,13 +44,49 @@ export default function EmployerDashboard() {
     reader.readAsText(file);
   };
 
-  const handleGenerateTree = () => {
+  const handleGenerateTree = async () => {
     setIsGenerating(true);
-    setTimeout(() => {
-      // Mock generation
-      setMerkleRoot('0x72a819280b1341c2...');
-      setIsGenerating(false);
-    }, 1500);
+    try {
+      const reg = await generateRegistry(csvData, 'AegisPayEmployer123');
+      setMerkleRoot(reg.merkleRoot);
+      setRegistry(reg);
+    } catch (e) {
+      console.error(e);
+      alert('Error generating registry');
+    }
+    setIsGenerating(false);
+  };
+
+  const handleExportJSON = () => {
+    if (!registry) return;
+    const blob = new Blob([JSON.stringify(registry, (key, value) =>
+      typeof value === 'bigint' ? value.toString() : value
+    , 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'registry.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleDeployRoot = async () => {
+    try {
+      await deployRootToContract(contractId, merkleRoot);
+      alert('Deploy Root Transaction Submitted Successfully!');
+    } catch (e: any) {
+      alert('Error: ' + e.message);
+    }
+  };
+
+  const handleFundEscrow = async () => {
+    try {
+      await fundEscrowContract(contractId, totalPayroll);
+      alert('Fund Escrow Transaction Submitted Successfully!');
+      setBalance(totalPayroll.toFixed(2));
+    } catch (e: any) {
+      alert('Error: ' + e.message);
+    }
   };
 
   return (
@@ -106,10 +145,10 @@ export default function EmployerDashboard() {
                 </div>
               </div>
               <div style={{ display: 'flex', gap: 'var(--space-3)', flexDirection: 'column' }}>
-                <button className="btn btn-glass" disabled={merkleRoot === '0x...'}>
+                <button className="btn btn-glass" disabled={merkleRoot === '0x...'} onClick={handleDeployRoot}>
                   Deploy Root
                 </button>
-                <button className="btn btn-primary" disabled={totalPayroll === 0}>
+                <button className="btn btn-primary" disabled={totalPayroll === 0} onClick={handleFundEscrow}>
                   Fund Escrow (${totalPayroll.toFixed(2)})
                 </button>
               </div>
@@ -175,7 +214,7 @@ export default function EmployerDashboard() {
           <motion.div className="neu-card glass-card" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-4)' }}>
               <h3 style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '1.2rem' }}><CheckCircle size={20} /> Proof Server Registry</h3>
-              <button className="btn btn-glass" style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', fontSize: '0.9rem' }}>
+              <button className="btn btn-glass" onClick={handleExportJSON} disabled={!registry} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', fontSize: '0.9rem' }}>
                 <Download size={16} /> Export JSON
               </button>
             </div>

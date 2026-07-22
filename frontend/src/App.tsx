@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import './index.css';
 import { Navbar, Footer } from './components/Layout';
 import { HeroSection, FeaturesSection, HowItWorksSection } from './components/Sections';
 import { ClaimSection } from './components/ClaimForm';
 import { ToastArea, useToast } from './components/Toast';
+import { WalletProvider } from './context/WalletContext';
 import EmployerDashboard from './pages/EmployerDashboard';
+import WithdrawPage from './pages/WithdrawPage';
 import NotFound from './pages/NotFound';
 
 function LandingPage() {
@@ -60,12 +61,15 @@ function LandingPage() {
 export default function App() {
   return (
     <BrowserRouter>
-      <a href="#main-content" className="skip-link">Skip to main content</a>
-      <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/employer" element={<EmployerDashboard />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+      <WalletProvider>
+        <a href="#main-content" className="skip-link">Skip to main content</a>
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/employer" element={<EmployerDashboard />} />
+          <Route path="/withdraw" element={<WithdrawPage />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </WalletProvider>
     </BrowserRouter>
   );
 }

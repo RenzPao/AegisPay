@@ -10,11 +10,16 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@stellar/freighter-api": "^6.0.1",
+    "@stellar/stellar-sdk": "^16.0.1",
+    "@types/react-router-dom": "^5.3.3",
+    "circomlibjs": "^0.1.7",
+    "ethers": "^6.17.0",
     "framer-motion": "^12.42.2",
     "lucide-react": "^1.25.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
-    "react-router-dom": "^7.1.5",
+    "react-router-dom": "^7.18.1",
     "snarkjs": "^0.7.6"
   },
   "devDependencies": {

@@ -132,7 +132,7 @@ impl AegisPayVerifier {
         }
 
         let nullifier_key = Symbol::new(&env, "spent");
-        let is_spent: bool = env.storage().persistent().has(&(&nullifier_key, &public_inputs.nullifier));
+        let is_spent: bool = env.storage().persistent().has(&(nullifier_key.clone(), public_inputs.nullifier.clone()));
         if is_spent {
             return Err(Error::NullifierSpent);
         }
@@ -141,7 +141,7 @@ impl AegisPayVerifier {
             return Err(Error::InvalidProof);
         }
 
-        env.storage().persistent().set(&(&nullifier_key, &public_inputs.nullifier), &true);
+        env.storage().persistent().set(&(nullifier_key, public_inputs.nullifier.clone()), &true);
 
         let usdc_address: Address = env.storage().instance().get(&Symbol::new(&env, "usdc_token")).unwrap();
         let usdc_client = token::Client::new(&env, &usdc_address);

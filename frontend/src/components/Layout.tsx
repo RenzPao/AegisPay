@@ -1,7 +1,7 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { Shield, Code, MessageCircle, Globe } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
+import WalletPanel from './WalletPanel';
 
 // ── Navbar ───────────────────────────────────────────────────
 interface NavbarProps { activeSection: string; onNav: (s: string) => void; }
@@ -50,18 +50,8 @@ export function Navbar({ activeSection, onNav }: NavbarProps) {
           </li>
         </ul>
 
-        {/* CTA */}
-        {isHome ? (
-          <a href="#claim" className="btn btn-primary nav-cta" style={{ padding: '10px 22px', fontSize: '0.9rem', minHeight: 40 }}
-            onClick={(e) => { e.preventDefault(); document.getElementById('claim')?.scrollIntoView({ behavior: 'smooth' }); }}
-          >
-            Claim Wages
-          </a>
-        ) : (
-          <Link to="/#claim" className="btn btn-primary nav-cta" style={{ padding: '10px 22px', fontSize: '0.9rem', minHeight: 40 }}>
-            Claim Wages
-          </Link>
-        )}
+        {/* Wallet CTA */}
+        <WalletPanel />
       </div>
     </nav>
   );
