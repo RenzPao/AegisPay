@@ -9,7 +9,8 @@ import { deployRootToContract, fundEscrowContract, initializeContract } from '..
 
 interface WorkerData {
   workerId: string;
-  wageAmount: number;
+  wageAmountUsd: number;
+  wageAmountXlm: number;
 }
 
 export default function EmployerDashboard() {
@@ -22,7 +23,24 @@ export default function EmployerDashboard() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [registry, setRegistry] = useState<PayrollRegistry | null>(null);
 
+  const [xlmPrice, setXlmPrice] = useState<number | null>(null);
+
+  React.useEffect(() => {
+    fetch('https://api.coingecko.com/api/v3/simple/price?ids=stellar&vs_currencies=usd')
+      .then(res => res.json())
+      .then(data => {
+        if (data.stellar && data.stellar.usd) {
+          setXlmPrice(data.stellar.usd);
+        }
+      })
+      .catch(console.error);
+  }, []);
+
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!xlmPrice) {
+      alert('Still fetching live XLM price, please try again in a moment.');
+      return;
+    }
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
@@ -30,17 +48,19 @@ export default function EmployerDashboard() {
       const text = evt.target?.result as string;
       const lines = text.split('\n').filter(l => l.trim().length > 0);
       const parsed: WorkerData[] = [];
-      let total = 0;
-      // Skip header if exists, assuming workerId,wageAmount
+      let totalXlm = 0;
+      // Skip header if exists, assuming workerId,wageAmountUsd
       for (let i = 1; i < lines.length; i++) {
-        const [id, wage] = lines[i].split(',');
-        if (id && wage) {
-          parsed.push({ workerId: id.trim(), wageAmount: parseFloat(wage) });
-          total += parseFloat(wage);
+        const [id, wageUsdStr] = lines[i].split(',');
+        if (id && wageUsdStr) {
+          const wageUsd = parseFloat(wageUsdStr);
+          const wageXlm = wageUsd / xlmPrice;
+          parsed.push({ workerId: id.trim(), wageAmountUsd: wageUsd, wageAmountXlm: wageXlm });
+          totalXlm += wageXlm;
         }
       }
       setCsvData(parsed);
-      setTotalPayroll(total);
+      setTotalPayroll(totalXlm);
     };
     reader.readAsText(file);
   };
@@ -48,7 +68,9 @@ export default function EmployerDashboard() {
   const handleGenerateTree = async () => {
     setIsGenerating(true);
     try {
-      const reg = await generateRegistry(csvData, 'AegisPayEmployer123');
+      // Pass the XLM amounts to generateRegistry
+      const registryData = csvData.map(d => ({ workerId: d.workerId, wageAmount: d.wageAmountXlm }));
+      const reg = await generateRegistry(registryData, 'AegisPayEmployer123');
       setMerkleRoot(reg.merkleRoot);
       setRegistry(reg);
     } catch (e) {
@@ -221,7 +243,8 @@ export default function EmployerDashboard() {
               />
               <UploadCloud size={48} color="var(--color-muted)" style={{ margin: '0 auto var(--space-4)' }} />
               <p style={{ fontWeight: 'bold', marginBottom: 4 }}>Drag and drop your CSV file here</p>
-              <p style={{ fontSize: '0.85rem', color: 'var(--color-muted)' }}>Format: workerId, wageAmount</p>
+              <p style={{ fontSize: '0.85rem', color: 'var(--color-muted)' }}>Format: workerId, wageAmount (in USD)</p>
+              {xlmPrice && <p style={{ fontSize: '0.8rem', color: 'var(--color-accent)', marginTop: 8 }}>Live Rate: 1 XLM = ${xlmPrice.toFixed(4)}</p>}
             </div>
 
             {csvData.length > 0 && (
@@ -237,14 +260,16 @@ export default function EmployerDashboard() {
                     <thead style={{ background: 'var(--color-bg-raised)', position: 'sticky', top: 0 }}>
                       <tr>
                         <th style={{ padding: '12px', textAlign: 'left', borderBottom: '1px solid var(--color-border)' }}>Worker ID</th>
-                        <th style={{ padding: '12px', textAlign: 'right', borderBottom: '1px solid var(--color-border)' }}>Wage Amount (XLM)</th>
+                        <th style={{ padding: '12px', textAlign: 'right', borderBottom: '1px solid var(--color-border)' }}>Wage (USD)</th>
+                        <th style={{ padding: '12px', textAlign: 'right', borderBottom: '1px solid var(--color-border)' }}>Converted (XLM)</th>
                       </tr>
                     </thead>
                     <tbody>
                       {csvData.map((row, i) => (
                         <tr key={i} style={{ borderBottom: '1px solid var(--color-border)' }}>
                           <td style={{ padding: '10px 12px', fontFamily: 'var(--font-mono)' }}>{row.workerId}</td>
-                          <td style={{ padding: '10px 12px', textAlign: 'right' }}>{row.wageAmount.toFixed(2)}</td>
+                          <td style={{ padding: '10px 12px', textAlign: 'right' }}>${row.wageAmountUsd.toFixed(2)}</td>
+                          <td style={{ padding: '10px 12px', textAlign: 'right', color: 'var(--color-accent)' }}>{row.wageAmountXlm.toFixed(2)}</td>
                         </tr>
                       ))}
                     </tbody>

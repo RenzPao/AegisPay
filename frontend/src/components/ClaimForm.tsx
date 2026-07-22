@@ -138,6 +138,19 @@ export function ClaimSection({ notify }: ClaimSectionProps) {
   const [txHash, setTxHash] = useState('');
   const [status, setStatus] = useState<{ msg: string; type: 'idle' | 'loading' | 'ready' | 'error' }>({ msg: 'Upload your claim file to begin', type: 'idle' });
   const [progress, setProgress] = useState<{ wasm: number; zkey: number }>({ wasm: 0, zkey: 0 });
+  
+  const [xlmPrice, setXlmPrice] = useState<number | null>(null);
+
+  React.useEffect(() => {
+    fetch('https://api.coingecko.com/api/v3/simple/price?ids=stellar&vs_currencies=usd')
+      .then(res => res.json())
+      .then(data => {
+        if (data.stellar && data.stellar.usd) {
+          setXlmPrice(data.stellar.usd);
+        }
+      })
+      .catch(console.error);
+  }, []);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -239,8 +252,12 @@ export function ClaimSection({ notify }: ClaimSectionProps) {
       notify('success', 'Claim Confirmed!', 'Funds are being routed to your anchor.');
     } catch (e: any) {
       console.error(e);
+      let errorMsg = e.message || 'The network could not process your transaction.';
+      if (errorMsg.includes('Error(Contract, #5)') || errorMsg.includes('NullifierSpent')) {
+        errorMsg = 'This claim file has already been redeemed.';
+      }
       setStatus({ msg: 'Submission failed. Please retry.', type: 'error' });
-      notify('error', 'Submission Failed', e.message || 'The network could not process your transaction.');
+      notify('error', 'Submission Failed', errorMsg);
     }
   }, [proofData, form, notify]);
 
@@ -359,7 +376,7 @@ export function ClaimSection({ notify }: ClaimSectionProps) {
                               </div>
                               <div style={{ fontSize: '0.9rem', color: 'var(--color-muted)' }}>
                                 <span style={{ marginRight: 16 }}><strong>ID:</strong> {form.workerId}</span>
-                                <span><strong>Amount:</strong> {(Number(form.wageAmount) / 1e7).toFixed(2)} XLM</span>
+                                <span><strong>Amount:</strong> {(Number(form.wageAmount) / 1e7).toFixed(2)} XLM {xlmPrice ? `(approx. $${((Number(form.wageAmount) / 1e7) * xlmPrice).toFixed(2)})` : ''}</span>
                               </div>
                             </div>
                             
@@ -486,7 +503,7 @@ export function ClaimSection({ notify }: ClaimSectionProps) {
                       <div style={{ marginTop: 'var(--space-6)', padding: 'var(--space-5)', background: 'var(--color-bg-raised)', borderRadius: 'var(--radius-md)', border: 'var(--glass-border)' }}>
                         <h4 style={{ marginBottom: 'var(--space-3)', fontSize: '1rem' }}>Claim Summary</h4>
                         {[
-                          { label: 'Amount', value: `${(parseFloat(form.wageAmount) / 1e7).toFixed(2)} XLM → ${form.targetAsset}` },
+                          { label: 'Amount', value: `${(parseFloat(form.wageAmount) / 1e7).toFixed(2)} XLM ${xlmPrice ? `(~$${((parseFloat(form.wageAmount) / 1e7) * xlmPrice).toFixed(2)})` : ''} → ${form.targetAsset}` },
                           { label: 'Destination', value: form.anchorAddress.slice(0, 8) + '...' + form.anchorAddress.slice(-8) },
                           { label: 'Network Fee', value: '0 XLM (covered by relayer)' },
                           { label: 'Privacy', value: 'Identity hidden ✓' },
