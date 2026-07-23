@@ -654,7 +654,7 @@ export default function EmployerDashboard() {
                       </div>
                       <div className="neu-card glass-card" style={{ padding: '20px', textAlign: 'center' }}>
                         <h4 style={{ margin: 0, opacity: 0.7, fontSize: '0.9rem' }}>Total Volume (XLM)</h4>
-                        <p style={{ margin: '10px 0 0', fontSize: '2rem', fontWeight: 'bold', color: 'var(--color-primary)' }}>{history.reduce((acc, h) => acc + (h.workers.workers?.reduce((s: any, w: any) => s + w.wageAmount, 0) || 0), 0) / 1e7}</p>
+                        <p style={{ margin: '10px 0 0', fontSize: '2rem', fontWeight: 'bold', color: 'var(--color-primary)' }}>{(history.reduce((acc, h) => acc + (h.workers.workers?.reduce((s: any, w: any) => s + Number(w.wageAmount), 0) || 0), 0) / 1e7).toLocaleString(undefined, { maximumFractionDigits: 2 })}</p>
                       </div>
                     </div>
                   )}
