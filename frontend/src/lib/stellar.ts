@@ -62,8 +62,16 @@ async function buildSignAndSend(
   return sendResponse.hash;
 }
 
-function hexToBytes32(hex: string): Buffer {
-  return Buffer.from(hex.replace(/^0x/, '').padStart(64, '0'), 'hex');
+function hexToBytes32(hexOrDec: string): Buffer {
+  if (!hexOrDec.startsWith('0x') && /^[0-9]+$/.test(hexOrDec)) {
+    try {
+      const hex = BigInt(hexOrDec).toString(16);
+      if (hex.length <= 64) {
+        return Buffer.from(hex.padStart(64, '0'), 'hex');
+      }
+    } catch(e) {}
+  }
+  return Buffer.from(hexOrDec.replace(/^0x/, '').padStart(64, '0'), 'hex');
 }
 
 // ── Contract Functions ────────────────────────────────────────────────────────
