@@ -617,6 +617,22 @@ export default function EmployerDashboard() {
             <AnimatePresence mode="wait">
               {activeTab === 'history' && (
                 <motion.div key="history" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                  {!selectedHistory && (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', marginBottom: '30px' }}>
+                      <div className="neu-card glass-card" style={{ padding: '20px', textAlign: 'center' }}>
+                        <h4 style={{ margin: 0, opacity: 0.7, fontSize: '0.9rem' }}>Total Payrolls</h4>
+                        <p style={{ margin: '10px 0 0', fontSize: '2rem', fontWeight: 'bold', color: 'var(--color-primary)' }}>{history.length}</p>
+                      </div>
+                      <div className="neu-card glass-card" style={{ padding: '20px', textAlign: 'center' }}>
+                        <h4 style={{ margin: 0, opacity: 0.7, fontSize: '0.9rem' }}>Total Workers Paid</h4>
+                        <p style={{ margin: '10px 0 0', fontSize: '2rem', fontWeight: 'bold', color: 'var(--color-primary)' }}>{history.reduce((acc, h) => acc + (h.workers.workers?.length || 0), 0)}</p>
+                      </div>
+                      <div className="neu-card glass-card" style={{ padding: '20px', textAlign: 'center' }}>
+                        <h4 style={{ margin: 0, opacity: 0.7, fontSize: '0.9rem' }}>Total Volume (XLM)</h4>
+                        <p style={{ margin: '10px 0 0', fontSize: '2rem', fontWeight: 'bold', color: 'var(--color-primary)' }}>{history.reduce((acc, h) => acc + (h.workers.workers?.reduce((s: any, w: any) => s + w.wageAmount, 0) || 0), 0) / 1e7}</p>
+                      </div>
+                    </div>
+                  )}
                   <h2 style={{ marginBottom: 16 }}>Payroll History</h2>
                   {isLoadingHistory ? <p>Loading...</p> : (
                     selectedHistory ? (
