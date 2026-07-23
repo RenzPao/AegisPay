@@ -195,18 +195,11 @@ export async function submitGaslessClaim(
   const merkleRootBuffer = hexToBytes32(merkleRootHex);
 
   let nullifierBuffer: Buffer;
-  if (nullifierHex.startsWith('0xMOCK')) {
-    const data = new TextEncoder().encode(nullifierHex);
-    // @ts-ignore
-    const hash = await crypto.subtle.digest('SHA-256', data);
-    nullifierBuffer = Buffer.from(hash);
+  if (/^\d+$/.test(nullifierHex)) {
+    const hex = BigInt(nullifierHex).toString(16).padStart(64, '0');
+    nullifierBuffer = Buffer.from(hex, 'hex');
   } else {
-    if (/^\d+$/.test(nullifierHex)) {
-      const hex = BigInt(nullifierHex).toString(16).padStart(64, '0');
-      nullifierBuffer = Buffer.from(hex, 'hex');
-    } else {
-      nullifierBuffer = hexToBytes32(nullifierHex);
-    }
+    nullifierBuffer = hexToBytes32(nullifierHex);
   }
 
   const proof = createStructScVal({
@@ -270,18 +263,11 @@ export async function isNullifierSpent(contractId: string, nullifierHex: string)
   const server = new StellarSdk.rpc.Server(config.rpcUrl);
   const contract = new StellarSdk.Contract(contractId);
   let nullifierBuffer: Buffer;
-  if (nullifierHex.startsWith('0xMOCK')) {
-    const data = new TextEncoder().encode(nullifierHex);
-    // @ts-ignore
-    const hash = await crypto.subtle.digest('SHA-256', data);
-    nullifierBuffer = Buffer.from(hash);
+  if (/^\d+$/.test(nullifierHex)) {
+    const hex = BigInt(nullifierHex).toString(16).padStart(64, '0');
+    nullifierBuffer = Buffer.from(hex, 'hex');
   } else {
-    if (/^\d+$/.test(nullifierHex)) {
-      const hex = BigInt(nullifierHex).toString(16).padStart(64, '0');
-      nullifierBuffer = Buffer.from(hex, 'hex');
-    } else {
-      nullifierBuffer = hexToBytes32(nullifierHex);
-    }
+    nullifierBuffer = hexToBytes32(nullifierHex);
   }
 
   const operation = contract.call(

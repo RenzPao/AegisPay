@@ -126,10 +126,10 @@ export async function generateProof(
       },
       publicSignals: [
         inputs.merkleRoot.toString(),
-        "0xMOCKNULLIFIER_" + inputs.workerId.toString(),
+        inputs.workerId.toString(),
         inputs.wageAmount.toString()
       ],
-      nullifier: "0xMOCKNULLIFIER_" + inputs.workerId.toString()
+      nullifier: inputs.workerId.toString()
     };
   }
 }
