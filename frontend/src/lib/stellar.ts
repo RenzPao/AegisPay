@@ -201,7 +201,12 @@ export async function submitGaslessClaim(
     const hash = await crypto.subtle.digest('SHA-256', data);
     nullifierBuffer = Buffer.from(hash);
   } else {
-    nullifierBuffer = hexToBytes32(nullifierHex);
+    if (/^\d+$/.test(nullifierHex)) {
+      const hex = BigInt(nullifierHex).toString(16).padStart(64, '0');
+      nullifierBuffer = Buffer.from(hex, 'hex');
+    } else {
+      nullifierBuffer = hexToBytes32(nullifierHex);
+    }
   }
 
   const proof = createStructScVal({
@@ -271,7 +276,12 @@ export async function isNullifierSpent(contractId: string, nullifierHex: string)
     const hash = await crypto.subtle.digest('SHA-256', data);
     nullifierBuffer = Buffer.from(hash);
   } else {
-    nullifierBuffer = hexToBytes32(nullifierHex);
+    if (/^\d+$/.test(nullifierHex)) {
+      const hex = BigInt(nullifierHex).toString(16).padStart(64, '0');
+      nullifierBuffer = Buffer.from(hex, 'hex');
+    } else {
+      nullifierBuffer = hexToBytes32(nullifierHex);
+    }
   }
 
   const operation = contract.call(
