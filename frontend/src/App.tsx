@@ -60,7 +60,7 @@ function LandingPage() {
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={import.meta.env.BASE_URL}>
       <WalletProvider>
         <a href="#main-content" className="skip-link">Skip to main content</a>
         <Routes>
