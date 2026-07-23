@@ -7,7 +7,7 @@ export const TESTNET_XLM_CONTRACT = 'CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2R
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 async function getConnectedAccount() {
-  const address = await kit.getPublicKey();
+  const { address } = await kit.getAddress();
   if (!address) {
     throw new Error('Wallet not connected. Please connect your wallet and try again.');
   }
