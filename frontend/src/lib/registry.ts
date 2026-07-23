@@ -22,7 +22,7 @@ export interface PayrollRegistry {
   >;
 }
 
-function stringToBigInt(str: string): bigint {
+export function stringToBigInt(str: string): bigint {
   const bytes = ethers.toUtf8Bytes(str);
   const hash = ethers.keccak256(bytes);
   return BigInt(hash) % BigInt("21888242871839275222246405745257275088548364400416034343698204186575808495617");

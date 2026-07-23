@@ -5,7 +5,8 @@ import type { ToastType } from './Toast';
 import { ErrorModal, useErrorModal } from './ErrorModal';
 
 import { config } from '../lib/config';
-import { generateProof, hashToField } from '../lib/zkProver';
+import { generateProof } from '../lib/zkProver';
+import { stringToBigInt } from '../lib/registry';
 import type { ProgressCallback } from '../lib/zkProver';
 
 // ── Types ─────────────────────────────────────────────────────
@@ -212,10 +213,10 @@ export function ClaimSection({ notify }: ClaimSectionProps) {
       };
       
       const inputs = {
-        workerId: await hashToField(form.workerId),
+        workerId: stringToBigInt(form.workerId),
         wageAmount: BigInt(form.wageAmount),
         secretSalt: BigInt(form.secretSalt),
-        employerId: await hashToField(form.employerId), // or BigInt if already parsed, depending on claim file format
+        employerId: stringToBigInt(form.employerId),
         pathElements: form.pathElements.map(x => BigInt(x)),
         pathIndices: form.pathIndices,
         merkleRoot: BigInt(form.merkleRoot)
