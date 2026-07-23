@@ -88,6 +88,12 @@ Unlike traditional crypto payroll solutions (like Sablier or standard multisig d
 * **Analytics:**
 ![Analytics](public/analytics.png)
 
+* **CI/CD Pipeline:**
+![CI/CD Pipeline](public/cicd.png)
+
+* **Test Output:**
+![Test Output](public/test.png)
+
 ---
 
 ## Engineering & Architecture
@@ -98,9 +104,11 @@ Unlike traditional crypto payroll solutions (like Sablier or standard multisig d
 * **Smart Contract:** Rust (Soroban SDK)
 * **Blockchain Integration:** `@stellar/stellar-sdk`, `@stellar/freighter-api`
 
-### Live Contract (Testnet)
-![Testnet Contract](public/testnetv2.png)
+### Live Demo & Testnet Details
+* **Live Demo:** [https://renzpao.github.io/AegisPay/](https://renzpao.github.io/AegisPay/)
 * **Contract Address:** [`CC6QLF4DI7C6LKURR2V7XQOZ72BNG5BOKURQ2SYQHPTAZEHO7PLRMR5K`](https://stellar.expert/explorer/testnet/contract/CC6QLF4DI7C6LKURR2V7XQOZ72BNG5BOKURQ2SYQHPTAZEHO7PLRMR5K)
+* **Transaction Hash:** [`e2105673626ac4aade91e70f6fad328b9ff57b053c07b2f1a55c059724dbbe0d`](https://stellar.expert/explorer/testnet/tx/e2105673626ac4aade91e70f6fad328b9ff57b053c07b2f1a55c059724dbbe0d)
+![Testnet Contract](public/testnetv2.png)
 
 ### Architecture
 
