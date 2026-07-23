@@ -6,6 +6,7 @@ import { config } from '../lib/config';
 import { generateRegistry } from '../lib/registry';
 import type { PayrollRegistry } from '../lib/registry';
 import { deployRootToContract, fundEscrowContract, initializeContract } from '../lib/stellar';
+import { ErrorModal, useErrorModal } from '../components/ErrorModal';
 
 interface WorkerData {
   workerId: string;
@@ -22,6 +23,8 @@ export default function EmployerDashboard() {
   const [totalPayroll, setTotalPayroll] = useState(0);
   const [isGenerating, setIsGenerating] = useState(false);
   const [registry, setRegistry] = useState<PayrollRegistry | null>(null);
+  const [successMsg, setSuccessMsg] = useState('');
+  const { modalError, showError, clearError } = useErrorModal();
 
   const [xlmPrice, setXlmPrice] = useState<number | null>(null);
 
@@ -38,7 +41,7 @@ export default function EmployerDashboard() {
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!xlmPrice) {
-      alert('Still fetching live XLM price, please try again in a moment.');
+      showError('xlm price feed not yet available, please try again in a moment.');
       return;
     }
     const file = e.target.files?.[0];
@@ -75,7 +78,7 @@ export default function EmployerDashboard() {
       setRegistry(reg);
     } catch (e) {
       console.error(e);
-      alert('Error generating registry');
+      showError('Error generating registry from the uploaded CSV.');
     }
     setIsGenerating(false);
   };
@@ -125,19 +128,19 @@ export default function EmployerDashboard() {
   const handleDeployRoot = async () => {
     try {
       await deployRootToContract(contractId, merkleRoot);
-      alert('Deploy Root Transaction Submitted Successfully!');
+      setSuccessMsg('Merkle Root published on-chain successfully!');
     } catch (e: any) {
-      alert('Error: ' + e.message);
+      showError(e?.message || 'Failed to deploy Merkle Root to contract');
     }
   };
 
   const handleFundEscrow = async () => {
     try {
       await fundEscrowContract(contractId, totalPayroll);
-      alert('Fund Escrow Transaction Submitted Successfully!');
       setBalance(totalPayroll.toFixed(2));
+      setSuccessMsg(`Escrow funded with ${totalPayroll.toFixed(2)} XLM successfully!`);
     } catch (e: any) {
-      alert('Error: ' + e.message);
+      showError(e?.message || 'Failed to fund escrow contract');
     }
   };
 
@@ -146,14 +149,40 @@ export default function EmployerDashboard() {
       const employerIdHex = '0000000000000000000000000000000000000000000000000000000000000123';
       const rootHex = merkleRoot === '0x...' ? '0000000000000000000000000000000000000000000000000000000000000000' : merkleRoot;
       await initializeContract(contractId, employerIdHex, rootHex);
-      alert('Contract Initialized Successfully!');
+      setSuccessMsg('Contract initialized successfully!');
     } catch (e: any) {
-      alert('Error initializing: ' + e.message);
+      showError(e?.message || 'Contract initialization failed');
     }
   };
 
   return (
     <>
+      <ErrorModal error={modalError} onClose={clearError} />
+      {successMsg && (
+        <div
+          role="status"
+          aria-live="polite"
+          style={{
+            position: 'fixed', top: 24, right: 24, zIndex: 9000,
+            background: 'var(--color-bg-card)',
+            border: '1px solid rgba(34,197,94,0.4)',
+            borderRadius: 'var(--radius-lg)',
+            padding: '16px 20px',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+            display: 'flex', alignItems: 'center', gap: 12,
+            color: 'var(--color-foreground)', fontSize: '0.9rem', fontWeight: 500,
+            maxWidth: 360,
+          }}
+        >
+          <CheckCircle size={20} color="var(--color-accent)" />
+          {successMsg}
+          <button
+            onClick={() => setSuccessMsg('')}
+            aria-label="Dismiss"
+            style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-muted)' }}
+          >✕</button>
+        </div>
+      )}
       <Navbar activeSection="none" onNav={() => {}} />
       <main style={{ paddingTop: '100px', minHeight: '80vh' }}>
         <div className="container">

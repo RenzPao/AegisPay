@@ -1,10 +1,25 @@
-import { Keypair, Networks, TransactionBuilder, Contract, xdr, rpc, FeeBumpTransaction, TimeoutInfinite } from '@stellar/stellar-sdk';
+import {
+  Keypair,
+  Networks,
+  TransactionBuilder,
+  Contract,
+  Address,
+  xdr,
+  rpc,
+  TimeoutInfinite,
+  Transaction,
+  FeeBumpTransaction,
+} from '@stellar/stellar-sdk';
 import { config } from './config';
 import { proofToXdr, publicInputsToXdr, waitForTransaction } from './utils/stellar';
 
 const server = new rpc.Server(config.STELLAR_RPC_URL);
 const networkPassphrase = config.STELLAR_NETWORK === 'testnet' ? Networks.TESTNET : Networks.PUBLIC;
 const relayerKeypair = Keypair.fromSecret(config.RELAYER_SECRET_KEY);
+
+function addressToScVal(addr: string): xdr.ScVal {
+  return new Address(addr).toScVal();
+}
 
 export async function buildAndSubmitClaim(
   proof: any,
@@ -18,19 +33,19 @@ export async function buildAndSubmitClaim(
     const relayerAccount = await server.getAccount(relayerKeypair.publicKey());
     const contract = new Contract(config.CONTRACT_ID);
 
-    // Prepare arguments
+    // Build contract call arguments using Address helper (SDK v12 compatible)
     const args = [
       proofToXdr(proof),
       publicInputsToXdr(publicSignals),
-      new xdr.ScAddress.scAddressTypeAccountId(Keypair.fromPublicKey(workerAddress).xdrAccountId()).toScVal(),
-      new xdr.ScAddress.scAddressTypeAccountId(Keypair.fromPublicKey(targetTokenAddress).xdrAccountId()).toScVal(),
-      new xdr.ScAddress.scAddressTypeAccountId(Keypair.fromPublicKey(anchorAddress).xdrAccountId()).toScVal(),
-      xdr.ScVal.scvVec(pathAddresses.map(addr => new xdr.ScAddress.scAddressTypeAccountId(Keypair.fromPublicKey(addr).xdrAccountId()).toScVal()))
+      addressToScVal(workerAddress),
+      addressToScVal(targetTokenAddress),
+      addressToScVal(anchorAddress),
+      xdr.ScVal.scvVec(pathAddresses.map(addr => addressToScVal(addr))),
     ];
 
     // Build inner transaction
     const innerTx = new TransactionBuilder(relayerAccount, {
-      fee: '100', // Preflight will determine actual fee
+      fee: '100',
       networkPassphrase,
     })
       .addOperation(contract.call('claim_payroll', ...args))
@@ -39,22 +54,19 @@ export async function buildAndSubmitClaim(
 
     // Simulate to get footprint and resource fee
     const preflight = await server.simulateTransaction(innerTx);
-    
+
     if (rpc.Api.isSimulationError(preflight)) {
       throw new Error(`Simulation failed: ${preflight.error}`);
     }
 
-    // Prepare the transaction for submission
-    const tx = rpc.assembleTransaction(innerTx, networkPassphrase, preflight).build();
-    
-    // Create fee bump transaction
-    const feeBumpTx = new FeeBumpTransaction(tx, preflight.minResourceFee || '100000');
-    feeBumpTx.sign(relayerKeypair);
+    // Assemble transaction with Soroban simulation data
+    const preparedTx = rpc.assembleTransaction(innerTx, preflight).build() as Transaction;
+    preparedTx.sign(relayerKeypair);
 
-    // Submit the transaction
-    const sendResponse = await server.sendTransaction(feeBumpTx);
-    
-    if (sendResponse.status === rpc.Api.SendTransactionStatus.ERROR) {
+    // Submit the prepared transaction directly (fee-bump is optional for testnet)
+    const sendResponse = await server.sendTransaction(preparedTx);
+
+    if (sendResponse.status === 'ERROR') {
       throw new Error(`Submit failed: ${sendResponse.errorResult?.toXDR('base64')}`);
     }
 

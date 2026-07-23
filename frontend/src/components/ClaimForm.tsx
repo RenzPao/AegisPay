@@ -1,7 +1,8 @@
 import React, { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Key, Hash, DollarSign, User, ChevronRight, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { Hash, DollarSign, ChevronRight, CheckCircle, AlertCircle } from 'lucide-react';
 import type { ToastType } from './Toast';
+import { ErrorModal, useErrorModal } from './ErrorModal';
 
 import { config } from '../lib/config';
 import { generateProof, hashToField } from '../lib/zkProver';
@@ -138,6 +139,7 @@ export function ClaimSection({ notify }: ClaimSectionProps) {
   const [txHash, setTxHash] = useState('');
   const [status, setStatus] = useState<{ msg: string; type: 'idle' | 'loading' | 'ready' | 'error' }>({ msg: 'Upload your claim file to begin', type: 'idle' });
   const [progress, setProgress] = useState<{ wasm: number; zkey: number }>({ wasm: 0, zkey: 0 });
+  const { modalError, showError, clearError } = useErrorModal();
   
   const [xlmPrice, setXlmPrice] = useState<number | null>(null);
 
@@ -160,7 +162,7 @@ export function ClaimSection({ notify }: ClaimSectionProps) {
       try {
         const text = evt.target?.result as string;
         const data = JSON.parse(text);
-        if (!data.workerId || !data.pathElements) throw new Error('Invalid format');
+        if (!data.workerId || !data.pathElements) throw new Error('claim file: missing required fields');
         
         setForm(prev => ({
           ...prev,
@@ -175,8 +177,9 @@ export function ClaimSection({ notify }: ClaimSectionProps) {
         }));
         setClaimFileUploaded(true);
         setStatus({ msg: 'Claim file loaded. Ready to generate proof.', type: 'ready' });
-      } catch (e) {
-        notify('error', 'Invalid File', 'Could not parse the claim file.');
+      } catch (err: any) {
+        showError(err?.message || 'Could not parse the claim file.');
+        setStatus({ msg: 'Invalid claim file.', type: 'error' });
       }
     };
     reader.readAsText(file);
@@ -227,8 +230,8 @@ export function ClaimSection({ notify }: ClaimSectionProps) {
     } catch (err: any) {
       setClaimStep('form');
       setCurrentStep(0);
-      setStatus({ msg: err.message || 'Proof generation failed. Please retry.', type: 'error' });
-      notify('error', 'Proof Generation Failed', err.message || 'An error occurred during proof generation.');
+      setStatus({ msg: 'Proof generation failed. Please retry.', type: 'error' });
+      showError(err?.message || 'proof generation failed in groth16 circuit');
     }
   }, [form, notify]);
 
@@ -252,12 +255,8 @@ export function ClaimSection({ notify }: ClaimSectionProps) {
       notify('success', 'Claim Confirmed!', 'Funds are being routed to your anchor.');
     } catch (e: any) {
       console.error(e);
-      let errorMsg = e.message || 'The network could not process your transaction.';
-      if (errorMsg.includes('Error(Contract, #5)') || errorMsg.includes('NullifierSpent')) {
-        errorMsg = 'This claim file has already been redeemed.';
-      }
       setStatus({ msg: 'Submission failed. Please retry.', type: 'error' });
-      notify('error', 'Submission Failed', errorMsg);
+      showError(e?.message || 'Transaction failed');
     }
   }, [proofData, form, notify]);
 
@@ -274,6 +273,7 @@ export function ClaimSection({ notify }: ClaimSectionProps) {
 
   return (
     <section id="claim" className="claim-section" aria-labelledby="claim-heading">
+      <ErrorModal error={modalError} onClose={clearError} />
       <div className="container">
         <motion.div
           className="claim-wrapper"
