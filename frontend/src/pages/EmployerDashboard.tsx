@@ -506,6 +506,17 @@ export default function EmployerDashboard() {
       const hash = await fundEscrowContract(contractId, totalXlm);
       setTxHash(hash || '');
 
+      // Step 4: Record this batch in history
+      const { address } = await kit.getAddress();
+      if (address && registry) {
+        const { error: dbError } = await supabase.from('payroll_history').insert({
+          employer: address,
+          root: merkleRoot,
+          workers: registry
+        });
+        if (dbError) console.error("Failed to save history", dbError);
+      }
+
       setPublishStatus('done');
       setStep('distribute');
     } catch (err: any) {
