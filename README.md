@@ -11,6 +11,8 @@
   </p>
 </div>
 
+![Main UI](./public/main.png)
+
 <br />
 
 ## Problem & Solution

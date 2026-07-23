@@ -1,7 +1,6 @@
 export const config = {
-  proofServerUrl: import.meta.env.VITE_PROOF_SERVER_URL || 'http://localhost:3002',
-  relayerUrl: import.meta.env.VITE_RELAYER_URL || 'https://aegispay-28cv.onrender.com',
-  contractId: import.meta.env.VITE_CONTRACT_ID || 'CAK5DO7PWHLAKUCNWAEOUO5M2MMJ7R4WGCJVBBTKX3S4LUM6NCEPFRN2',
-  stellarNetwork: import.meta.env.VITE_STELLAR_NETWORK || 'testnet',
-  rpcUrl: import.meta.env.VITE_RPC_URL || (import.meta.env.VITE_RELAYER_URL || 'https://aegispay-28cv.onrender.com') + '/rpc',
+  contractId: import.meta.env.VITE_CONTRACT_ID || 'CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC',
+  rpcUrl: import.meta.env.VITE_RPC_URL || 'https://soroban-testnet.stellar.org',
+  networkPassphrase: import.meta.env.VITE_NETWORK_PASSPHRASE || 'Test SDF Network ; September 2015',
+  sponsorSecret: import.meta.env.VITE_SPONSOR_SECRET || 'SDPZKNYWFW7NVMHJ5IFP6U4K633CZYHUIEEM3J4F5Z42PFFC4X24NDO2', // Hardcoded funded sponsor for demo
 };

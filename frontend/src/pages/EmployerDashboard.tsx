@@ -3,11 +3,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Navbar, Footer } from '../components/Layout';
 import {
   UploadCloud, ChevronRight, CheckCircle, Download, RefreshCw,
-  Users, DollarSign, Shield, Zap, ArrowLeft, FileJson, Clock, History, FileText, Check, AlertCircle, Key
+  Users, DollarSign, Shield, Zap, ArrowLeft, FileJson, Clock, History, FileText, Check, AlertCircle
 } from 'lucide-react';
 import { generateRegistry } from '../lib/registry';
 import type { PayrollRegistry } from '../lib/registry';
-import { deployRootToContract, fundEscrowContract, initializeContract, addPayrollRoot, buildAddPayrollRootTxXdr, submitCoSignedTx, isNullifierSpent } from '../lib/stellar';
+import { deployRootToContract, fundEscrowContract, initializeContract, addPayrollRoot, isNullifierSpent } from '../lib/stellar';
 import { ErrorModal, useErrorModal } from '../components/ErrorModal';
 import { config } from '../lib/config';
 import { supabase } from '../lib/supabase';
@@ -18,7 +18,7 @@ interface WorkerRow { workerId: string; wageAmountUsd: number; wageAmountXlm: nu
 
 type WizardStep = 'upload' | 'review' | 'distribute';
 type PublishStatus = 'idle' | 'initializing' | 'deploying' | 'funding' | 'done' | 'error';
-type Tab = 'run_payroll' | 'history' | 'cosign';
+type Tab = 'run_payroll' | 'history';
 
 // Helpers
 function formatUsd(n: number) { return `$${n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`; }
@@ -38,14 +38,6 @@ export default function EmployerDashboard() {
   const [publishStatus, setPublishStatus] = useState<PublishStatus>('idle');
   const [txHash, setTxHash] = useState('');
   
-  // Multi-sig State
-  const [isMultiSig, setIsMultiSig] = useState(false);
-  const [generatedXdr, setGeneratedXdr] = useState('');
-  
-  // Co-sign State
-  const [importXdr, setImportXdr] = useState('');
-  const [isCosigning, setIsCosigning] = useState(false);
-
   // History State
   const [history, setHistory] = useState<any[]>([]);
   const [selectedHistory, setSelectedHistory] = useState<any | null>(null);
@@ -127,18 +119,6 @@ export default function EmployerDashboard() {
 
   const handlePublish = async () => {
     const contractId = config.contractId;
-    if (isMultiSig) {
-      try {
-        setPublishStatus('deploying');
-        const xdr = await buildAddPayrollRootTxXdr(contractId, merkleRoot);
-        setGeneratedXdr(xdr);
-        setPublishStatus('done');
-      } catch (err: any) {
-        setPublishStatus('error');
-        showError(err?.message || 'Failed to build multi-sig transaction');
-      }
-      return;
-    }
 
     try {
       setPublishStatus('initializing');
@@ -167,20 +147,6 @@ export default function EmployerDashboard() {
     } catch (err: any) {
       setPublishStatus('error');
       showError(err?.message || 'Failed to publish payroll batch');
-    }
-  };
-
-  const handleCosign = async () => {
-    if (!importXdr) return;
-    setIsCosigning(true);
-    try {
-      const hash = await submitCoSignedTx(importXdr);
-      showError('Transaction successfully co-signed and submitted! Hash: ' + hash);
-      setImportXdr('');
-    } catch (err: any) {
-      showError(err?.message || 'Failed to submit co-signed transaction');
-    } finally {
-      setIsCosigning(false);
     }
   };
 
@@ -243,7 +209,6 @@ export default function EmployerDashboard() {
           <div style={{ display: 'flex', gap: 10, marginBottom: 'var(--space-8)', borderBottom: '1px solid var(--color-border)', paddingBottom: 16, overflowX: 'auto' }}>
             <button className={`btn ${activeTab === 'run_payroll' ? 'btn-primary' : 'btn-glass'}`} onClick={() => setActiveTab('run_payroll')}><UploadCloud size={16}/> Run Payroll</button>
             <button className={`btn ${activeTab === 'history' ? 'btn-primary' : 'btn-glass'}`} onClick={() => setActiveTab('history')}><History size={16}/> History</button>
-            <button className={`btn ${activeTab === 'cosign' ? 'btn-primary' : 'btn-glass'}`} onClick={() => setActiveTab('cosign')}><Key size={16}/> Co-Sign (Multi-Sig)</button>
           </div>
 
           <div className="neu-card glass-card" style={{ padding: 'var(--space-8)' }}>
@@ -272,21 +237,9 @@ export default function EmployerDashboard() {
                   {step === 'review' && (
                     <>
                       <h2 style={{ marginBottom: 8 }}>Review & Publish</h2>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
-                        <input type="checkbox" id="multisig" checked={isMultiSig} onChange={e => setIsMultiSig(e.target.checked)} />
-                        <label htmlFor="multisig">Enable Multi-Sig Mode (Requires Co-Signer)</label>
-                      </div>
-                      
-                      {generatedXdr ? (
-                        <div style={{ padding: 20, background: 'var(--color-bg-raised)', borderRadius: 10, wordBreak: 'break-all', fontSize: 12 }}>
-                          <p style={{ fontWeight: 'bold', marginBottom: 10 }}>Give this XDR to your Co-Signer:</p>
-                          <code style={{ color: 'var(--color-accent)' }}>{generatedXdr}</code>
-                        </div>
-                      ) : (
-                        <button className="btn btn-primary" style={{ width: '100%', padding: '14px' }} onClick={handlePublish} disabled={publishStatus === 'deploying' || publishStatus === 'funding'}>
-                          {isMultiSig ? 'Generate Multi-Sig XDR' : 'Publish & Fund On-Chain'}
-                        </button>
-                      )}
+                      <button className="btn btn-primary" style={{ width: '100%', padding: '14px' }} onClick={handlePublish} disabled={publishStatus === 'deploying' || publishStatus === 'funding'}>
+                        Publish & Fund On-Chain
+                      </button>
                     </>
                   )}
                   {step === 'distribute' && (
@@ -367,22 +320,6 @@ export default function EmployerDashboard() {
                       </div>
                     )
                   )}
-                </motion.div>
-              )}
-
-              {activeTab === 'cosign' && (
-                <motion.div key="cosign" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                  <h2 style={{ marginBottom: 16 }}>Co-Sign Transaction</h2>
-                  <p style={{ marginBottom: 16, color: 'var(--color-muted)' }}>Paste the XDR provided by the payroll initiator to sign and submit.</p>
-                  <textarea
-                    value={importXdr}
-                    onChange={e => setImportXdr(e.target.value)}
-                    placeholder="Paste XDR here..."
-                    style={{ width: '100%', height: 120, padding: 12, background: 'var(--color-bg-raised)', border: '1px solid var(--color-border)', borderRadius: 8, color: 'var(--color-foreground)', marginBottom: 16, fontFamily: 'var(--font-mono)', fontSize: 12 }}
-                  />
-                  <button className="btn btn-primary" style={{ width: '100%', padding: '14px' }} onClick={handleCosign} disabled={!importXdr || isCosigning}>
-                    {isCosigning ? 'Submitting...' : 'Sign & Submit to Network'}
-                  </button>
                 </motion.div>
               )}
             </AnimatePresence>

@@ -171,7 +171,7 @@ function createStructScVal(obj: Record<string, StellarSdk.xdr.ScVal>) {
  * Worker submits their ZK proof to claim wages.
  * The merkleRootHex in publicInputs must match an active batch root on the contract.
  */
-export async function submitClaimToContract(
+export async function submitGaslessClaim(
   contractId:          string,
   employerIdHex:       string,
   merkleRootHex:       string,
@@ -181,16 +181,15 @@ export async function submitClaimToContract(
 ): Promise<string> {
   const publicKey = await getConnectedAccount();
   const server    = new StellarSdk.rpc.Server(config.rpcUrl);
-  const account   = await server.getAccount(publicKey);
   const contract  = new StellarSdk.Contract(contractId);
 
   const employerIdBuffer = hexToBytes32(employerIdHex);
   const merkleRootBuffer = hexToBytes32(merkleRootHex);
 
-  // Normalize the nullifier — if it's a mock string, SHA-256 hash it to 32 bytes
   let nullifierBuffer: Buffer;
   if (nullifierHex.startsWith('0xMOCK')) {
     const data = new TextEncoder().encode(nullifierHex);
+    // @ts-ignore
     const hash = await crypto.subtle.digest('SHA-256', data);
     nullifierBuffer = Buffer.from(hash);
   } else {
@@ -219,73 +218,39 @@ export async function submitClaimToContract(
     StellarSdk.nativeToScVal([])
   );
 
-  const tx = new StellarSdk.TransactionBuilder(account, {
-    fee: '10000',
+  const account = await server.getAccount(publicKey);
+  const innerTx = new StellarSdk.TransactionBuilder(account, {
+    fee: '100', // Inner fee is small, paid by sponsor in feebump
     networkPassphrase: StellarSdk.Networks.TESTNET,
   }).addOperation(operation).setTimeout(30).build();
 
-  const preparedTx = await server.prepareTransaction(tx);
+  // Employee signs inner tx (no xlm needed)
+  const preparedTx = await server.prepareTransaction(innerTx);
   const signResult = await kit.signTransaction(preparedTx.toXDR(), {
     networkPassphrase: StellarSdk.Networks.TESTNET,
   });
-
-  const signedTx = StellarSdk.TransactionBuilder.fromXDR(
+  
+  const signedInnerTx = StellarSdk.TransactionBuilder.fromXDR(
     signResult.signedTxXdr,
     StellarSdk.Networks.TESTNET
   ) as StellarSdk.Transaction;
 
-  const sendResponse = await server.sendTransaction(signedTx);
+  // Wrap in FeeBumpTransaction
+  const sponsorKeypair = StellarSdk.Keypair.fromSecret(config.sponsorSecret);
+  const feeBumpTx = StellarSdk.TransactionBuilder.buildFeeBumpTransaction(
+    sponsorKeypair,
+    signedInnerTx,
+    '10000',
+    StellarSdk.Networks.TESTNET
+  );
+  
+  feeBumpTx.sign(sponsorKeypair);
+  
+  const sendResponse = await server.sendTransaction(feeBumpTx);
   if (sendResponse.status === 'PENDING' || sendResponse.status === 'SUCCESS') {
     return sendResponse.hash;
   }
   throw new Error(`Transaction failed: ${sendResponse.status}`);
-}
-
-export async function buildAddPayrollRootTxXdr(contractId: string, rootHex: string): Promise<string> {
-  const publicKey = await getConnectedAccount();
-  const server    = new StellarSdk.rpc.Server(config.rpcUrl);
-  const contract  = new StellarSdk.Contract(contractId);
-  const rootBuffer = hexToBytes32(rootHex);
-  const operation = contract.call(
-    'add_payroll_root',
-    new StellarSdk.Address(publicKey).toScVal(),
-    StellarSdk.nativeToScVal(rootBuffer)
-  );
-
-  const account = await server.getAccount(publicKey);
-  const tx = new StellarSdk.TransactionBuilder(account, {
-    fee: '10000',
-    networkPassphrase: StellarSdk.Networks.TESTNET,
-  })
-    .addOperation(operation)
-    .setTimeout(30)
-    .build();
-
-  const preparedTx = await server.prepareTransaction(tx);
-  const signResult = await kit.signTransaction(preparedTx.toXDR(), {
-    networkPassphrase: StellarSdk.Networks.TESTNET,
-  });
-
-  return signResult.signedTxXdr;
-}
-
-export async function submitCoSignedTx(xdr: string): Promise<string> {
-  const server = new StellarSdk.rpc.Server(config.rpcUrl);
-  
-  const signResult = await kit.signTransaction(xdr, {
-    networkPassphrase: StellarSdk.Networks.TESTNET,
-  });
-
-  const fullySignedTx = StellarSdk.TransactionBuilder.fromXDR(
-    signResult.signedTxXdr,
-    StellarSdk.Networks.TESTNET
-  ) as StellarSdk.Transaction;
-
-  const sendResponse = await server.sendTransaction(fullySignedTx);
-  if (sendResponse.status !== 'PENDING' && sendResponse.status !== 'SUCCESS') {
-    throw new Error(`Transaction failed with status: ${sendResponse.status}`);
-  }
-  return sendResponse.hash;
 }
 
 export async function isNullifierSpent(contractId: string, nullifierHex: string): Promise<boolean> {

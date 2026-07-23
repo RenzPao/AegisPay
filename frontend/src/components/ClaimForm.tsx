@@ -44,7 +44,7 @@ function validateForm(f: ClaimForm): Partial<Record<keyof ClaimForm, string>> {
   return err;
 }
 
-import { submitClaimToContract } from '../lib/stellar';
+import { submitGaslessClaim } from '../lib/stellar';
 
 // ── Proof Terminal Display ────────────────────────────────────
 function ProofDisplay({ proof, signals, nullifier }: { proof: object; signals: string[]; nullifier: string }) {
@@ -240,7 +240,7 @@ export function ClaimSection({ notify }: ClaimSectionProps) {
     setStatus({ msg: 'Submitting transaction to Stellar network...', type: 'loading' });
     try {
       const employerIdHex = '0000000000000000000000000000000000000000000000000000000000000123';
-      const txHash = await submitClaimToContract(
+      const txHash = await submitGaslessClaim(
         config.contractId,
         employerIdHex,
         form.merkleRoot,
