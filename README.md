@@ -68,6 +68,28 @@ Unlike traditional crypto payroll solutions (like Sablier or standard multisig d
 
 ---
 
+## Screenshots
+
+* **Wallet Connected State:**
+![Wallet Connected State](public/walletconnected.png)
+
+* **Balance Displayed:**
+![Balance Displayed](public/balancedisplay.png)
+
+* **Successful Transaction Result:**
+![Successful Transaction Result](public/transac.png)
+
+* **Wallet Options:**
+![Wallet Options](public/walletconnect.png)
+
+* **Mobile View:**
+![Mobile View](public/mobile.png)
+
+* **Analytics:**
+![Analytics](public/analytics.png)
+
+---
+
 ## Engineering & Architecture
 
 ### Tech Stack
@@ -78,7 +100,7 @@ Unlike traditional crypto payroll solutions (like Sablier or standard multisig d
 
 ### Live Contract (Testnet)
 ![Testnet Contract](public/testnetv2.png)
-* **Contract Address:** [`CANBQLRMKKQHC6XSTY6AWZQQKAAPI35P24GVKUFMTYRH54KLV25VKSCI`](https://stellar.expert/explorer/testnet/contract/CANBQLRMKKQHC6XSTY6AWZQQKAAPI35P24GVKUFMTYRH54KLV25VKSCI)
+* **Contract Address:** [`CAK5DO7PWHLAKUCNWAEOUO5M2MMJ7R4WGCJVBBTKX3S4LUM6NCEPFRN2`](https://stellar.expert/explorer/testnet/contract/CAK5DO7PWHLAKUCNWAEOUO5M2MMJ7R4WGCJVBBTKX3S4LUM6NCEPFRN2)
 
 ### Architecture
 
