@@ -8,6 +8,7 @@ import { ToastArea, useToast } from './components/Toast';
 import { WalletProvider } from './context/WalletContext';
 import EmployerDashboard from './pages/EmployerDashboard';
 import WithdrawPage from './pages/WithdrawPage';
+import PitchDeck from './pages/PitchDeck';
 import NotFound from './pages/NotFound';
 
 function LandingPage() {
@@ -67,6 +68,7 @@ export default function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/employer" element={<EmployerDashboard />} />
           <Route path="/withdraw" element={<WithdrawPage />} />
+          <Route path="/pitchdeck" element={<PitchDeck />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </WalletProvider>
