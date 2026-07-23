@@ -41,10 +41,27 @@ async function buildSignAndSend(
   ) as StellarSdk.Transaction;
 
   const sendResponse = await server.sendTransaction(signedTx);
-  if (sendResponse.status === 'PENDING' || sendResponse.status === 'SUCCESS') {
-    return sendResponse.hash;
+  if (sendResponse.status !== 'PENDING' && sendResponse.status !== 'SUCCESS') {
+    throw new Error(`Transaction failed with status: ${sendResponse.status}`);
   }
-  throw new Error(`Transaction failed with status: ${sendResponse.status}`);
+
+  // Poll for on-chain confirmation to prevent race conditions in subsequent steps
+  let status = 'NOT_FOUND';
+  let attempts = 0;
+  while (status === 'NOT_FOUND' && attempts < 30) {
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    const txResponse = await server.getTransaction(sendResponse.hash);
+    status = txResponse.status;
+    if (status === 'SUCCESS') return sendResponse.hash;
+    if (status === 'FAILED') throw new Error(`Transaction failed on-chain.`);
+    attempts++;
+  }
+
+  if (status === 'NOT_FOUND') {
+    throw new Error('Transaction confirmation timed out.');
+  }
+
+  return sendResponse.hash;
 }
 
 function hexToBytes32(hex: string): Buffer {
