@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Navbar, Footer } from '../components/Layout';
 import {
@@ -431,6 +431,20 @@ export default function EmployerDashboard() {
     setSelectedHistory({ ...batch, workers: { ...reg, workers: updatedWorkers } });
   };
 
+  const selectedHistoryRef = useRef(selectedHistory);
+  useEffect(() => {
+    selectedHistoryRef.current = selectedHistory;
+  }, [selectedHistory]);
+
+  useEffect(() => {
+    if (!selectedHistory) return;
+    const interval = setInterval(() => {
+      if (selectedHistoryRef.current) {
+        checkLiveStatus(selectedHistoryRef.current);
+      }
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [selectedHistory?.created_at]);
 
   React.useEffect(() => {
     fetch('https://api.coingecko.com/api/v3/simple/price?ids=stellar&vs_currencies=usd')
@@ -650,8 +664,8 @@ export default function EmployerDashboard() {
                       <div>
                         <button className="btn btn-glass" style={{ marginBottom: 20 }} onClick={() => setSelectedHistory(null)}><ArrowLeft size={16}/> Back to List</button>
                         <h3 style={{ marginBottom: 16 }}>Batch from {new Date(selectedHistory.created_at).toLocaleString()}</h3>
-                        <button className="btn btn-glass" style={{ marginBottom: 16 }} onClick={() => checkLiveStatus(selectedHistory)}>Check Live Status</button>
                         
+
                         <div className="table-responsive-wrapper" style={{ maxHeight: 400 }}>
                           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.88rem' }}>
                             <thead style={{ background: 'var(--color-bg-raised)', position: 'sticky', top: 0 }}>
