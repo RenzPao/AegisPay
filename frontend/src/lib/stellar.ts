@@ -1,7 +1,6 @@
 import * as StellarSdk from '@stellar/stellar-sdk';
 import { getAddress, signTransaction, setAllowed } from '@stellar/freighter-api';
-
-const RPC_URL = 'https://soroban-testnet.stellar.org';
+import { config } from './config';
 
 // Native XLM wrapped contract on testnet (used as the escrow token for testnet)
 export const TESTNET_XLM_CONTRACT = 'CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC';
@@ -60,7 +59,7 @@ function hexToBytes32(hex: string): Buffer {
  */
 export async function initializeContract(contractId: string, employerIdHex: string): Promise<string> {
   const publicKey = await getConnectedAccount();
-  const server    = new StellarSdk.rpc.Server(RPC_URL);
+  const server    = new StellarSdk.rpc.Server(config.rpcUrl);
   const contract  = new StellarSdk.Contract(contractId);
 
   const employerIdBuffer = hexToBytes32(employerIdHex);
@@ -81,7 +80,7 @@ export async function initializeContract(contractId: string, employerIdHex: stri
  */
 export async function addPayrollRoot(contractId: string, rootHex: string): Promise<string> {
   const publicKey = await getConnectedAccount();
-  const server    = new StellarSdk.rpc.Server(RPC_URL);
+  const server    = new StellarSdk.rpc.Server(config.rpcUrl);
   const contract  = new StellarSdk.Contract(contractId);
 
   const rootBuffer = hexToBytes32(rootHex);
@@ -105,7 +104,7 @@ export const deployRootToContract = addPayrollRoot;
  */
 export async function disablePayrollRoot(contractId: string, rootHex: string): Promise<string> {
   const publicKey = await getConnectedAccount();
-  const server    = new StellarSdk.rpc.Server(RPC_URL);
+  const server    = new StellarSdk.rpc.Server(config.rpcUrl);
   const contract  = new StellarSdk.Contract(contractId);
 
   const rootBuffer = hexToBytes32(rootHex);
@@ -124,7 +123,7 @@ export async function disablePayrollRoot(contractId: string, rootHex: string): P
  */
 export async function fundEscrowContract(contractId: string, amountXlm: number): Promise<string> {
   const publicKey = await getConnectedAccount();
-  const server    = new StellarSdk.rpc.Server(RPC_URL);
+  const server    = new StellarSdk.rpc.Server(config.rpcUrl);
   const contract  = new StellarSdk.Contract(contractId);
 
   const amountStroops = Math.floor(amountXlm * 1e7);
@@ -166,7 +165,7 @@ export async function submitClaimToContract(
   anchorAddress:       string
 ): Promise<string> {
   const publicKey = await getConnectedAccount();
-  const server    = new StellarSdk.rpc.Server(RPC_URL);
+  const server    = new StellarSdk.rpc.Server(config.rpcUrl);
   const account   = await server.getAccount(publicKey);
   const contract  = new StellarSdk.Contract(contractId);
 
