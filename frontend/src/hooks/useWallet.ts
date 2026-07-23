@@ -1,6 +1,6 @@
 /**
  * AegisPay — useWallet React hook
- * Manages Freighter wallet state: connect, disconnect, auto-reconnect, balances
+ * Manages Stellar Wallet Kit state: connect, disconnect, auto-reconnect, balances
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -9,19 +9,12 @@ import {
   connectWallet,
   fetchBalances,
   getConnectedAddress,
-  checkFreighterInstalled,
 } from '../lib/wallet';
 import type { WalletState, NetworkType } from '../lib/wallet';
 
 export function useWallet() {
   const [state, setState] = useState<WalletState>(INITIAL_WALLET_STATE);
-  const [freighterInstalled, setFreighterInstalled] = useState<boolean | null>(null);
   const refreshTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  // ── Auto-detect Freighter on mount ──────────────────────────
-  useEffect(() => {
-    checkFreighterInstalled().then(setFreighterInstalled);
-  }, []);
 
   // ── Auto-reconnect if previously connected ───────────────────
   useEffect(() => {
@@ -30,10 +23,12 @@ export function useWallet() {
       if (addr) {
         setState(s => ({ ...s, loading: true }));
         try {
-          const { address, network } = await connectWallet();
-          const { xlm, usdc } = await fetchBalances(address, network);
+          // If we have an address already, we might not want to call connectWallet() 
+          // because it triggers a modal. Let's just fetch balances.
+          const network = 'TESTNET'; // Default for testnet reconnect
+          const { xlm, usdc } = await fetchBalances(addr, network);
           setState({
-            connected: true, address, network,
+            connected: true, address: addr, network,
             xlmBalance: xlm, usdcBalance: usdc,
             loading: false, error: null,
           });
@@ -96,5 +91,5 @@ export function useWallet() {
     }
   }, [state.address, state.network, refreshBalances]);
 
-  return { ...state, freighterInstalled, connect, disconnect, refresh };
+  return { ...state, connect, disconnect, refresh };
 }

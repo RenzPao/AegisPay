@@ -1,5 +1,5 @@
 import * as StellarSdk from '@stellar/stellar-sdk';
-import { getAddress, signTransaction, setAllowed } from '@stellar/freighter-api';
+import { kit } from './wallet';
 import { config } from './config';
 
 // Native XLM wrapped contract on testnet (used as the escrow token for testnet)
@@ -7,12 +7,11 @@ export const TESTNET_XLM_CONTRACT = 'CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2R
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 async function getConnectedAccount() {
-  await setAllowed();
-  const addrResult = await getAddress();
-  if (addrResult.error || !addrResult.address) {
-    throw new Error(addrResult.error || 'Freighter wallet not connected. Please open Freighter and try again.');
+  const address = await kit.getPublicKey();
+  if (!address) {
+    throw new Error('Wallet not connected. Please connect your wallet and try again.');
   }
-  return addrResult.address;
+  return address;
 }
 
 async function buildSignAndSend(
@@ -30,10 +29,9 @@ async function buildSignAndSend(
     .build();
 
   const preparedTx = await server.prepareTransaction(tx);
-  const signResult = await signTransaction(preparedTx.toXDR(), {
+  const signResult = await kit.signTransaction(preparedTx.toXDR(), {
     networkPassphrase: StellarSdk.Networks.TESTNET,
   });
-  if (signResult.error) throw new Error(signResult.error);
 
   const signedTx = StellarSdk.TransactionBuilder.fromXDR(
     signResult.signedTxXdr,
@@ -227,10 +225,9 @@ export async function submitClaimToContract(
   }).addOperation(operation).setTimeout(30).build();
 
   const preparedTx = await server.prepareTransaction(tx);
-  const signResult = await signTransaction(preparedTx.toXDR(), {
+  const signResult = await kit.signTransaction(preparedTx.toXDR(), {
     networkPassphrase: StellarSdk.Networks.TESTNET,
   });
-  if (signResult.error) throw new Error(signResult.error);
 
   const signedTx = StellarSdk.TransactionBuilder.fromXDR(
     signResult.signedTxXdr,

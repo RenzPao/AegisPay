@@ -13,6 +13,9 @@ template MerkleTreeInclusionProof(levels) {
     signal levelHashes[levels + 1];
     levelHashes[0] <== leaf;
 
+    signal left[levels];
+    signal right[levels];
+
     for (var i = 0; i < levels; i++) {
         // Enforce pathIndices is strictly 0 or 1
         pathIndices[i] * (1 - pathIndices[i]) === 0;
@@ -20,11 +23,11 @@ template MerkleTreeInclusionProof(levels) {
         poseidons[i] = Poseidon(2);
 
         // Multiplexing: decide left/right based on the path index
-        signal left <== (pathElements[i] - levelHashes[i]) * pathIndices[i] + levelHashes[i];
-        signal right <== (levelHashes[i] - pathElements[i]) * pathIndices[i] + pathElements[i];
+        left[i] <== (pathElements[i] - levelHashes[i]) * pathIndices[i] + levelHashes[i];
+        right[i] <== (levelHashes[i] - pathElements[i]) * pathIndices[i] + pathElements[i];
 
-        poseidons[i].inputs[0] <== left;
-        poseidons[i].inputs[1] <== right;
+        poseidons[i].inputs[0] <== left[i];
+        poseidons[i].inputs[1] <== right[i];
 
         levelHashes[i + 1] <== poseidons[i].out;
     }

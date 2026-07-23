@@ -1,17 +1,16 @@
 /**
- * AegisPay Wallet Integration — Freighter API wrapper
+ * AegisPay Wallet Integration — Stellar Wallets Kit wrapper
  * Handles: connect, disconnect, address, network, USDC/XLM balances, sign XDR
  */
 
 import {
-  isConnected,
-  isAllowed,
-  requestAccess,
-  getAddress,
-  getNetwork,
-  signTransaction,
-} from '@stellar/freighter-api';
+  StellarWalletsKit,
+  WalletNetwork,
+  allowAllModules,
+  ISupportedWallet
+} from '@creit.tech/stellar-wallets-kit';
 import { Horizon } from '@stellar/stellar-sdk';
+import { config } from './config';
 
 // ── Constants ────────────────────────────────────────────────────────────────
 export const HORIZON_TESTNET = 'https://horizon-testnet.stellar.org';
@@ -43,6 +42,14 @@ export const INITIAL_WALLET_STATE: WalletState = {
   error:   null,
 };
 
+// ── Kit Initialization ───────────────────────────────────────────────────────
+
+export const kit = new StellarWalletsKit({
+  network: config.stellarNetwork === 'public' ? WalletNetwork.PUBLIC : WalletNetwork.TESTNET,
+  selectedWalletId: 'freighter',
+  modules: allowAllModules(),
+});
+
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 /** Returns the Horizon server URL for a given network */
@@ -66,41 +73,26 @@ export function shortenAddress(addr: string | null): string {
 
 // ── Core wallet actions ──────────────────────────────────────────────────────
 
-/** Check if Freighter extension is installed */
-export async function checkFreighterInstalled(): Promise<boolean> {
-  try {
-    const res = await isConnected();
-    return !res.error && res.isConnected !== undefined;
-  } catch {
-    return false;
-  }
-}
-
-/** Request wallet connection. Returns address on success, throws on failure. */
+/** Request wallet connection using the Kit's built-in modal */
 export async function connectWallet(): Promise<{ address: string; network: NetworkType }> {
-  // Check extension present
-  const installed = await checkFreighterInstalled();
-  if (!installed) {
-    throw new Error('Freighter wallet is not installed. Please install it from freighter.app');
-  }
-
-  // Request access
-  const accessResult = await requestAccess();
-  if (accessResult.error) {
-    throw new Error(accessResult.error);
-  }
-
-  // Get address
-  const addrResult = await getAddress();
-  if (addrResult.error || !addrResult.address) {
-    throw new Error(addrResult.error ?? 'Could not retrieve wallet address');
-  }
-
-  // Get network
-  const netResult = await getNetwork();
-  const network: NetworkType = (netResult.network as NetworkType) ?? 'TESTNET';
-
-  return { address: addrResult.address, network };
+  return new Promise((resolve, reject) => {
+    kit.openModal({
+      onWalletSelected: async (option: ISupportedWallet) => {
+        try {
+          kit.setWallet(option.id);
+          const publicKey = await kit.getPublicKey();
+          const network = config.stellarNetwork === 'public' ? 'PUBLIC' : 'TESTNET';
+          resolve({ address: publicKey, network });
+        } catch (error) {
+          reject(error);
+        }
+      },
+      onClosed: (err: Error) => {
+        if (err) reject(err);
+        else reject(new Error('User cancelled wallet connection'));
+      }
+    });
+  });
 }
 
 /** Fetch XLM and USDC balances for an address */
@@ -129,28 +121,28 @@ export async function fetchBalances(
   return { xlm, usdc };
 }
 
-/** Sign an XDR transaction with Freighter and return the signed XDR */
+/** Sign an XDR transaction with the active wallet */
 export async function signXdr(
   xdr: string,
   network: NetworkType
 ): Promise<string> {
-  const result = await signTransaction(xdr, {
+  const result = await kit.signTransaction(xdr, {
     networkPassphrase:
       network === 'PUBLIC'
         ? 'Public Global Stellar Network ; September 2015'
         : 'Test SDF Network ; September 2015',
   });
-  if (result.error) throw new Error(result.error);
-  return result.signedTxXdr ?? '';
+  return result.signedTxXdr;
 }
 
-/** Check if the current allowed address matches the connected address */
+/** Check if there's a stored session (active wallet) */
 export async function getConnectedAddress(): Promise<string | null> {
+  // StellarWalletsKit doesn't have an exact `isAllowed` equivalent that doesn't prompt.
+  // The common pattern is to just rely on the user clicking "Connect".
+  // However, we can try to fetch the public key if a wallet is already set.
   try {
-    const allowed = await isAllowed();
-    if (!allowed.isAllowed) return null;
-    const addr = await getAddress();
-    return addr.address ?? null;
+    const key = await kit.getPublicKey();
+    return key || null;
   } catch {
     return null;
   }

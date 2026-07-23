@@ -107,7 +107,7 @@ function WalletDropdown({ onClose }: { onClose: () => void }) {
 
 // ── Main WalletPanel ─────────────────────────────────────────
 export default function WalletPanel() {
-  const { connected, address, loading, error, connect, freighterInstalled } = useWalletContext();
+  const { connected, address, loading, error, connect } = useWalletContext();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -121,22 +121,6 @@ export default function WalletPanel() {
     if (open) document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [open]);
-
-  // Freighter not installed
-  if (freighterInstalled === false) {
-    return (
-      <a
-        href="https://freighter.app"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="btn btn-outline wallet-install-btn"
-        style={{ fontSize: '0.82rem', padding: '8px 14px', minHeight: 36, gap: 6 }}
-      >
-        <AlertTriangle size={14} />
-        Install Freighter
-      </a>
-    );
-  }
 
   // Connected state
   if (connected && address) {
@@ -172,7 +156,7 @@ export default function WalletPanel() {
       <button
         className="btn btn-primary nav-cta wallet-connect-btn"
         onClick={connect}
-        disabled={loading || freighterInstalled === null}
+        disabled={loading}
         style={{ padding: '10px 18px', fontSize: '0.88rem', minHeight: 40, gap: 8 }}
       >
         {loading ? (
