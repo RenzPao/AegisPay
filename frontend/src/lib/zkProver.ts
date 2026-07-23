@@ -1,4 +1,5 @@
 import * as snarkjs from 'snarkjs';
+import { initPoseidon, poseidonHash } from './poseidon';
 
 export interface ZKInputs {
   workerId: bigint;
@@ -116,6 +117,13 @@ export async function generateProof(
     await new Promise(r => setTimeout(r, 1000));
     if (onProgress) onProgress('zkey', 100, 100);
 
+    await initPoseidon();
+    const computedNullifier = poseidonHash([
+      inputs.secretSalt,
+      inputs.workerId,
+      inputs.employerId
+    ]).toString();
+
     return {
       proof: { 
         pi_a: ["0", "0", "0"], 
@@ -126,10 +134,10 @@ export async function generateProof(
       },
       publicSignals: [
         inputs.merkleRoot.toString(),
-        inputs.workerId.toString(),
+        computedNullifier,
         inputs.wageAmount.toString()
       ],
-      nullifier: inputs.workerId.toString()
+      nullifier: computedNullifier
     };
   }
 }
