@@ -25,6 +25,21 @@ const limiter = rateLimit({
 app.use('/submit-claim', limiter);
 app.use('/', claimRouter);
 
+// Proxy RPC requests to bypass browser CORS on public nodes
+app.post('/rpc', async (req, res) => {
+  try {
+    const response = await fetch(config.STELLAR_RPC_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(req.body)
+    });
+    const data = await response.json();
+    res.status(response.status).json(data);
+  } catch (error: any) {
+    res.status(500).json({ error: 'RPC Proxy Error', details: error.message });
+  }
+});
+
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok' });
 });
