@@ -853,3 +853,81 @@ footer {
 .form-label-action:hover { opacity: 0.75; }
 .alert { display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; border-radius: var(--radius-md); font-size: 0.85rem; }
 .alert-error { background: rgba(220,38,38,0.1); border: 1px solid rgba(220,38,38,0.3); color: #fca5a5; }
+
+/* -- Mobile Menu & Responsive Layouts ---------------------- */
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.mobile-menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--color-foreground);
+  cursor: pointer;
+  padding: 4px;
+}
+.mobile-menu-drawer {
+  position: absolute;
+  top: 68px;
+  left: 0;
+  width: 100%;
+  background: rgba(8,14,26,0.95);
+  backdrop-filter: blur(20px) saturate(1.5);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5);
+  border-bottom: 1px solid var(--color-border);
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition: max-height var(--duration-base) ease-out, opacity var(--duration-base) ease-out;
+}
+.mobile-menu-drawer.open {
+  max-height: 400px;
+  opacity: 1;
+}
+.mobile-menu-inner {
+  padding: var(--space-4) var(--space-6);
+}
+.mobile-nav-links {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.mobile-nav-link {
+  display: block;
+  padding: var(--space-3);
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: var(--color-muted);
+  text-decoration: none;
+  border-radius: var(--radius-md);
+  transition: background var(--duration-fast), color var(--duration-fast);
+}
+.mobile-nav-link:hover, .mobile-nav-link.active {
+  background: rgba(34,197,94,0.1);
+  color: var(--color-accent);
+}
+
+.table-responsive-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-6);
+}
+.table-responsive-wrapper table {
+  min-width: 600px;
+}
+
+@media (max-width: 768px) {
+  .desktop-only { display: none !important; }
+  .mobile-menu-toggle { display: block; }
+  .hero-actions { flex-direction: column; width: 100%; }
+  .hero-actions .btn { width: 100%; }
+  .footer-inner { flex-direction: column; text-align: center; justify-content: center; }
+  .footer-links { justify-content: center; }
+}
+

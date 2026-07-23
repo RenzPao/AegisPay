@@ -119,7 +119,7 @@ function UploadStep({
             ))}
           </div>
 
-          <div style={{ maxHeight: 220, overflowY: 'auto', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-6)' }}>
+          <div className="table-responsive-wrapper" style={{ maxHeight: 220 }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.88rem' }}>
               <thead style={{ background: 'var(--color-bg-raised)', position: 'sticky', top: 0 }}>
                 <tr>
@@ -329,7 +329,7 @@ function DistributeStep({
           <FileJson size={16} color="var(--color-muted)" />
           <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>Individual Claim Files</span>
         </div>
-        <div style={{ maxHeight: 320, overflowY: 'auto' }}>
+        <div className="table-responsive-wrapper" style={{ maxHeight: 320 }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.88rem' }}>
             <thead style={{ background: 'var(--color-bg-raised)', position: 'sticky', top: 0 }}>
               <tr>
