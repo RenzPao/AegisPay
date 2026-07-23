@@ -100,7 +100,7 @@ Unlike traditional crypto payroll solutions (like Sablier or standard multisig d
 
 ### Live Contract (Testnet)
 ![Testnet Contract](public/testnetv2.png)
-* **Contract Address:** [`CAK5DO7PWHLAKUCNWAEOUO5M2MMJ7R4WGCJVBBTKX3S4LUM6NCEPFRN2`](https://stellar.expert/explorer/testnet/contract/CAK5DO7PWHLAKUCNWAEOUO5M2MMJ7R4WGCJVBBTKX3S4LUM6NCEPFRN2)
+* **Contract Address:** [`CC6QLF4DI7C6LKURR2V7XQOZ72BNG5BOKURQ2SYQHPTAZEHO7PLRMR5K`](https://stellar.expert/explorer/testnet/contract/CC6QLF4DI7C6LKURR2V7XQOZ72BNG5BOKURQ2SYQHPTAZEHO7PLRMR5K)
 
 ### Architecture
 
