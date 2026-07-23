@@ -7,7 +7,10 @@ import {
 } from 'lucide-react';
 import { generateRegistry } from '../lib/registry';
 import type { PayrollRegistry } from '../lib/registry';
-import { deployRootToContract, fundEscrowContract, initializeContract, addPayrollRoot } from '../lib/stellar';
+import { deployRootToContract, fundEscrowContract, initializeContract, addPayrollRoot, isNullifierSpent } from '../lib/stellar';
+import { supabase } from '../lib/supabase';
+import { kit } from '../lib/wallet';
+import { History } from 'lucide-react';
 import { ErrorModal, useErrorModal } from '../components/ErrorModal';
 import { config } from '../lib/config';
 
@@ -16,6 +19,7 @@ interface WorkerRow { workerId: string; wageAmountUsd: number; wageAmountXlm: nu
 
 type WizardStep = 'upload' | 'review' | 'distribute';
 type PublishStatus = 'idle' | 'initializing' | 'deploying' | 'funding' | 'done' | 'error';
+type Tab = 'run_payroll' | 'history';
 
 const STEPS = [
   { id: 'upload',     label: 'Upload CSV',        num: 1 },
@@ -380,6 +384,53 @@ export default function EmployerDashboard() {
   const [publishStatus, setPublishStatus] = useState<PublishStatus>('idle');
   const [txHash, setTxHash] = useState('');
   const { modalError, showError, clearError } = useErrorModal();
+  const [activeTab, setActiveTab] = useState<Tab>('run_payroll');
+  const [history, setHistory] = useState<any[]>([]);
+  const [selectedHistory, setSelectedHistory] = useState<any | null>(null);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+
+  React.useEffect(() => {
+    if (activeTab === 'history') loadHistory();
+  }, [activeTab]);
+
+  const loadHistory = async () => {
+    setIsLoadingHistory(true);
+    try {
+      const { address } = await kit.getAddress();
+      if (!address) { showError('Please connect wallet to view history'); return; }
+      
+      const { data, error } = await supabase
+        .from('payroll_history')
+        .select('*')
+        .eq('employer', address)
+        .order('created_at', { ascending: false });
+        
+      if (error) throw error;
+      setHistory(data || []);
+    } catch (e: any) {
+      console.error(e);
+      showError(e.message || 'Failed to load history');
+    } finally {
+      setIsLoadingHistory(false);
+    }
+  };
+
+  const checkLiveStatus = async (batch: any) => {
+    const reg = batch.workers;
+    if (!reg) return;
+    const updatedWorkers = [...batch.workers.workers];
+    
+    for (const w of updatedWorkers) {
+      const proof = reg.proofs[w.workerId];
+      if (proof) {
+        const isSpent = await isNullifierSpent(config.contractId, proof.nullifier);
+        w.status = isSpent ? 'claimed' : 'pending';
+      }
+    }
+    
+    setSelectedHistory({ ...batch, workers: { ...reg, workers: updatedWorkers } });
+  };
+
 
   React.useEffect(() => {
     fetch('https://api.coingecko.com/api/v3/simple/price?ids=stellar&vs_currencies=usd')
@@ -525,7 +576,7 @@ export default function EmployerDashboard() {
 
           <div className="neu-card glass-card" style={{ padding: 'var(--space-8)' }}>
             <AnimatePresence mode="wait">
-              {step === 'upload' && (
+              {activeTab === 'run_payroll' && step === 'upload' && (
                 <UploadStep
                   key="upload"
                   xlmPrice={xlmPrice}
@@ -535,7 +586,7 @@ export default function EmployerDashboard() {
                   isBuilding={isBuilding}
                 />
               )}
-              {step === 'review' && (
+              {activeTab === 'run_payroll' && step === 'review' && (
                 <ReviewStep
                   key="review"
                   workers={workers}
@@ -547,7 +598,7 @@ export default function EmployerDashboard() {
                   txHash={txHash}
                 />
               )}
-              {step === 'distribute' && (
+              {activeTab === 'run_payroll' && step === 'distribute' && (
                 <DistributeStep
                   key="distribute"
                   workers={workers}
