@@ -240,3 +240,81 @@ export async function submitClaimToContract(
   }
   throw new Error(`Transaction failed: ${sendResponse.status}`);
 }
+
+export async function buildAddPayrollRootTxXdr(contractId: string, rootHex: string): Promise<string> {
+  const publicKey = await getConnectedAccount();
+  const server    = new StellarSdk.rpc.Server(config.rpcUrl);
+  const contract  = new StellarSdk.Contract(contractId);
+  const rootBuffer = hexToBytes32(rootHex);
+  const operation = contract.call(
+    'add_payroll_root',
+    new StellarSdk.Address(publicKey).toScVal(),
+    StellarSdk.nativeToScVal(rootBuffer)
+  );
+
+  const account = await server.getAccount(publicKey);
+  const tx = new StellarSdk.TransactionBuilder(account, {
+    fee: '10000',
+    networkPassphrase: StellarSdk.Networks.TESTNET,
+  })
+    .addOperation(operation)
+    .setTimeout(30)
+    .build();
+
+  const preparedTx = await server.prepareTransaction(tx);
+  const signResult = await kit.signTransaction(preparedTx.toXDR(), {
+    networkPassphrase: StellarSdk.Networks.TESTNET,
+  });
+
+  return signResult.signedTxXdr;
+}
+
+export async function submitCoSignedTx(xdr: string): Promise<string> {
+  const server = new StellarSdk.rpc.Server(config.rpcUrl);
+  
+  const signResult = await kit.signTransaction(xdr, {
+    networkPassphrase: StellarSdk.Networks.TESTNET,
+  });
+
+  const fullySignedTx = StellarSdk.TransactionBuilder.fromXDR(
+    signResult.signedTxXdr,
+    StellarSdk.Networks.TESTNET
+  ) as StellarSdk.Transaction;
+
+  const sendResponse = await server.sendTransaction(fullySignedTx);
+  if (sendResponse.status !== 'PENDING' && sendResponse.status !== 'SUCCESS') {
+    throw new Error(`Transaction failed with status: ${sendResponse.status}`);
+  }
+  return sendResponse.hash;
+}
+
+export async function isNullifierSpent(contractId: string, nullifierHex: string): Promise<boolean> {
+  const server = new StellarSdk.rpc.Server(config.rpcUrl);
+  const contract = new StellarSdk.Contract(contractId);
+  let nullifierBuffer: Buffer;
+  if (nullifierHex.startsWith('0xMOCK')) {
+    const data = new TextEncoder().encode(nullifierHex);
+    // @ts-ignore
+    const hash = await crypto.subtle.digest('SHA-256', data);
+    nullifierBuffer = Buffer.from(hash);
+  } else {
+    nullifierBuffer = hexToBytes32(nullifierHex);
+  }
+
+  const operation = contract.call(
+    'is_nullifier_spent',
+    StellarSdk.nativeToScVal(nullifierBuffer)
+  );
+  
+  try {
+    const sim = await server.simulateTransaction(
+      new StellarSdk.TransactionBuilder(new StellarSdk.Account('GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF', '1'), { fee: '100', networkPassphrase: StellarSdk.Networks.TESTNET }).addOperation(operation).setTimeout(30).build()
+    );
+    if (sim.result && StellarSdk.xdr.ScVal.isValid(sim.result.retval)) {
+      return StellarSdk.scValToNative(sim.result.retval) === true;
+    }
+  } catch (e) {
+    // If it fails, assume false or contract error
+  }
+  return false;
+}
