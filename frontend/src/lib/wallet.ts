@@ -7,7 +7,6 @@ import {
   StellarWalletsKit,
   Networks,
 } from '@creit.tech/stellar-wallets-kit';
-import type { ISupportedWallet } from '@creit.tech/stellar-wallets-kit';
 import { defaultModules } from '@creit.tech/stellar-wallets-kit/modules/utils';
 import { Horizon } from '@stellar/stellar-sdk';
 import { config } from './config';
@@ -44,11 +43,12 @@ export const INITIAL_WALLET_STATE: WalletState = {
 
 // ── Kit Initialization ───────────────────────────────────────────────────────
 
-export const kit = new StellarWalletsKit({
+StellarWalletsKit.init({
   network: config.stellarNetwork === 'public' ? Networks.PUBLIC : Networks.TESTNET,
-  selectedWalletId: 'freighter',
   modules: defaultModules(),
 });
+
+export const kit = StellarWalletsKit;
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -75,24 +75,13 @@ export function shortenAddress(addr: string | null): string {
 
 /** Request wallet connection using the Kit's built-in modal */
 export async function connectWallet(): Promise<{ address: string; network: NetworkType }> {
-  return new Promise((resolve, reject) => {
-    kit.openModal({
-      onWalletSelected: async (option: ISupportedWallet) => {
-        try {
-          kit.setWallet(option.id);
-          const publicKey = await kit.getPublicKey();
-          const network = config.stellarNetwork === 'public' ? 'PUBLIC' : 'TESTNET';
-          resolve({ address: publicKey, network });
-        } catch (error) {
-          reject(error);
-        }
-      },
-      onClosed: (err: Error) => {
-        if (err) reject(err);
-        else reject(new Error('User cancelled wallet connection'));
-      }
-    });
-  });
+  try {
+    const { address } = await StellarWalletsKit.authModal();
+    const network = config.stellarNetwork === 'public' ? 'PUBLIC' : 'TESTNET';
+    return { address, network };
+  } catch (err: any) {
+    throw new Error(err?.message || 'User cancelled wallet connection');
+  }
 }
 
 /** Fetch XLM and USDC balances for an address */
@@ -126,7 +115,7 @@ export async function signXdr(
   xdr: string,
   network: NetworkType
 ): Promise<string> {
-  const result = await kit.signTransaction(xdr, {
+  const result = await StellarWalletsKit.signTransaction(xdr, {
     networkPassphrase:
       network === 'PUBLIC'
         ? 'Public Global Stellar Network ; September 2015'
@@ -137,12 +126,9 @@ export async function signXdr(
 
 /** Check if there's a stored session (active wallet) */
 export async function getConnectedAddress(): Promise<string | null> {
-  // StellarWalletsKit doesn't have an exact `isAllowed` equivalent that doesn't prompt.
-  // The common pattern is to just rely on the user clicking "Connect".
-  // However, we can try to fetch the public key if a wallet is already set.
   try {
-    const key = await kit.getPublicKey();
-    return key || null;
+    const { address } = await StellarWalletsKit.getAddress();
+    return address || null;
   } catch {
     return null;
   }
