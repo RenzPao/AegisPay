@@ -5,10 +5,10 @@
 
 import {
   StellarWalletsKit,
-  WalletNetwork,
-  allowAllModules,
-  ISupportedWallet
+  Networks,
 } from '@creit.tech/stellar-wallets-kit';
+import type { ISupportedWallet } from '@creit.tech/stellar-wallets-kit';
+import { defaultModules } from '@creit.tech/stellar-wallets-kit/modules/utils';
 import { Horizon } from '@stellar/stellar-sdk';
 import { config } from './config';
 
@@ -45,9 +45,9 @@ export const INITIAL_WALLET_STATE: WalletState = {
 // ── Kit Initialization ───────────────────────────────────────────────────────
 
 export const kit = new StellarWalletsKit({
-  network: config.stellarNetwork === 'public' ? WalletNetwork.PUBLIC : WalletNetwork.TESTNET,
+  network: config.stellarNetwork === 'public' ? Networks.PUBLIC : Networks.TESTNET,
   selectedWalletId: 'freighter',
-  modules: allowAllModules(),
+  modules: defaultModules(),
 });
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
