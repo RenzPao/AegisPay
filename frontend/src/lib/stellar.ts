@@ -252,8 +252,8 @@ export async function submitGaslessClaim(
   const sponsorKeypair = StellarSdk.Keypair.fromSecret(config.sponsorSecret);
   const feeBumpTx = StellarSdk.TransactionBuilder.buildFeeBumpTransaction(
     sponsorKeypair,
-    signedInnerTx,
     '10000',
+    signedInnerTx,
     StellarSdk.Networks.TESTNET
   );
   
