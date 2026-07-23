@@ -17,8 +17,10 @@ const CONTRACT_ERRORS: Record<string, ParsedError> = {
   '#4': { severity: 'error', title: 'Invalid Proof', message: 'The zero-knowledge proof could not be verified on-chain.', hint: 'Your claim file may be corrupted or does not match the current payroll batch. Try re-downloading your claim file from your employer.' },
   '#5': { severity: 'warning', title: 'Wage Already Claimed', message: 'This claim file has already been used to claim your wage.', hint: 'Each claim file can only be redeemed once. If you believe this is an error, contact your employer.' },
   '#6': { severity: 'error', title: 'Insufficient Escrow Funds', message: 'The employer\'s escrow balance is too low to pay your wage.', hint: 'Your employer needs to deposit more XLM into the contract before you can claim.' },
-  '#7': { severity: 'error', title: 'Payroll Root Mismatch', message: 'Your claim file does not match the active payroll batch on-chain.', hint: 'Your employer may have uploaded a new payroll batch. Ask for an updated claim file, or make sure the employer has published the correct Merkle Root.' },
+  '#7': { severity: 'error', title: 'Payroll Batch Not Active', message: 'The payroll batch in your claim file is not in the active registry on-chain.', hint: 'Your claim file may reference an old or disabled batch. Ask your employer to check the contract, or request a new claim file for the current batch.' },
   '#8': { severity: 'error', title: 'Invalid Employer ID', message: 'The employer ID in your claim file does not match the contract.', hint: 'You may be using a claim file from the wrong employer or contract. Re-download your claim file.' },
+  '#9': { severity: 'warning', title: 'Batch Already Published', message: 'This payroll batch root has already been added to the contract.', hint: 'Each payroll batch is unique. You may have already published this batch. Check your past batches or generate a new one.' },
+  '#10': { severity: 'error', title: 'Batch Root Not Found', message: 'The payroll batch root you tried to disable does not exist on the contract.', hint: 'Double-check that the batch was successfully published before trying to disable it.' },
 };
 
 const WALLET_ERRORS: Record<string, ParsedError> = {
@@ -58,8 +60,10 @@ export function parseError(rawError: string | undefined | null): ParsedError {
   // Named contract errors (from relayer messages)
   if (msg.includes('nullifierspent') || msg.includes('already been redeemed') || msg.includes('already claimed')) return CONTRACT_ERRORS['#5'];
   if (msg.includes('invalidproof') || msg.includes('invalid proof')) return CONTRACT_ERRORS['#4'];
-  if (msg.includes('invalidroot') || msg.includes('merkle root')) return CONTRACT_ERRORS['#7'];
+  if (msg.includes('rootnotactive') || msg.includes('batch not active') || msg.includes('merkle root')) return CONTRACT_ERRORS['#7'];
   if (msg.includes('invalidemployer')) return CONTRACT_ERRORS['#8'];
+  if (msg.includes('rootalreadyactive') || msg.includes('already published')) return CONTRACT_ERRORS['#9'];
+  if (msg.includes('rootnotfound')) return CONTRACT_ERRORS['#10'];
   if (msg.includes('insufficientfunds') || msg.includes('insufficient funds')) return CONTRACT_ERRORS['#6'];
   if (msg.includes('notinitialized')) return CONTRACT_ERRORS['#2'];
   if (msg.includes('alreadyinitialized')) return CONTRACT_ERRORS['#1'];

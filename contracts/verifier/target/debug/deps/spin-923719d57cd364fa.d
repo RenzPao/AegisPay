@@ -1,0 +1,11 @@
+C:\Users\princ\.gemini\antigravity\scratch\AegisPay\contracts\verifier\target\debug\deps\spin-923719d57cd364fa.d: C:\Users\princ\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\spin-0.9.9\src\lib.rs C:\Users\princ\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\spin-0.9.9\src\mutex.rs C:\Users\princ\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\spin-0.9.9\src\mutex\spin.rs C:\Users\princ\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\spin-0.9.9\src\relax.rs C:\Users\princ\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\spin-0.9.9\src\rwlock.rs
+
+C:\Users\princ\.gemini\antigravity\scratch\AegisPay\contracts\verifier\target\debug\deps\libspin-923719d57cd364fa.rlib: C:\Users\princ\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\spin-0.9.9\src\lib.rs C:\Users\princ\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\spin-0.9.9\src\mutex.rs C:\Users\princ\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\spin-0.9.9\src\mutex\spin.rs C:\Users\princ\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\spin-0.9.9\src\relax.rs C:\Users\princ\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\spin-0.9.9\src\rwlock.rs
+
+C:\Users\princ\.gemini\antigravity\scratch\AegisPay\contracts\verifier\target\debug\deps\libspin-923719d57cd364fa.rmeta: C:\Users\princ\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\spin-0.9.9\src\lib.rs C:\Users\princ\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\spin-0.9.9\src\mutex.rs C:\Users\princ\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\spin-0.9.9\src\mutex\spin.rs C:\Users\princ\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\spin-0.9.9\src\relax.rs C:\Users\princ\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\spin-0.9.9\src\rwlock.rs
+
+C:\Users\princ\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\spin-0.9.9\src\lib.rs:
+C:\Users\princ\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\spin-0.9.9\src\mutex.rs:
+C:\Users\princ\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\spin-0.9.9\src\mutex\spin.rs:
+C:\Users\princ\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\spin-0.9.9\src\relax.rs:
+C:\Users\princ\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\spin-0.9.9\src\rwlock.rs:

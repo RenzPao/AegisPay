@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { generateRegistry } from '../lib/registry';
 import type { PayrollRegistry } from '../lib/registry';
-import { deployRootToContract, fundEscrowContract, initializeContract } from '../lib/stellar';
+import { deployRootToContract, fundEscrowContract, initializeContract, addPayrollRoot } from '../lib/stellar';
 import { ErrorModal, useErrorModal } from '../components/ErrorModal';
 import { config } from '../lib/config';
 
@@ -429,17 +429,27 @@ export default function EmployerDashboard() {
     }
   };
 
-  // Step 2: publish on-chain (3 transactions in sequence)
+  // Step 2: publish on-chain (init once, then add root + fund)
   const handlePublish = async () => {
     const contractId = config.contractId;
     try {
+      // Step 1: Initialize the contract (one-time setup — will fail silently if already done)
       setPublishStatus('initializing');
-      const rootHex = merkleRoot.startsWith('0x') ? merkleRoot.slice(2) : merkleRoot;
-      await initializeContract(contractId, '0000000000000000000000000000000000000000000000000000000000000123', rootHex);
+      try {
+        await initializeContract(contractId, '0000000000000000000000000000000000000000000000000000000000000123');
+      } catch (initErr: any) {
+        // If already initialized, that's fine — continue to add the new batch root
+        if (!initErr?.message?.toLowerCase().includes('alreadyinitialized') &&
+            !initErr?.message?.toLowerCase().includes('#1')) {
+          throw initErr;
+        }
+      }
 
+      // Step 2: Add this payroll batch's Merkle root to the registry
       setPublishStatus('deploying');
-      await deployRootToContract(contractId, merkleRoot);
+      await addPayrollRoot(contractId, merkleRoot);
 
+      // Step 3: Fund the escrow with this batch's total XLM
       setPublishStatus('funding');
       const totalXlm = workers.reduce((a, w) => a + w.wageAmountXlm, 0);
       const hash = await fundEscrowContract(contractId, totalXlm);

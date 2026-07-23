@@ -1184,6 +1184,7 @@ dependencies = [
 name = "soroban-zk-verifier"
 version = "0.1.0"
 dependencies = [
+ "arbitrary",
  "soroban-sdk",
 ]
 

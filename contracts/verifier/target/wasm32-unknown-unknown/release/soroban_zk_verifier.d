@@ -1,0 +1,1 @@
+C:\Users\princ\.gemini\antigravity\scratch\AegisPay\contracts\verifier\target\wasm32-unknown-unknown\release\soroban_zk_verifier.wasm: C:\Users\princ\.gemini\antigravity\scratch\AegisPay\contracts\verifier\src\lib.rs
