@@ -111,7 +111,8 @@ Unlike traditional crypto payroll solutions (like Sablier or standard multisig d
 https://github.com/user-attachments/assets/5cd00b9c-4455-4207-9798-9bcb03e2cf1d
 
 
-* **HD Video Demo:** [https://youtu.be/B1xgZMK27SM](https://youtu.be/B1xgZMK27SM)
+- **Live Pitch Deck**: [https://renzpao.github.io/AegisPay/pitchdeck](https://renzpao.github.io/AegisPay/pitchdeck)
+- **Demo Video (YouTube)**: [https://youtu.be/kC6y8D8Y65s](https://youtu.be/kC6y8D8Y65s)
 * **Contract Address:** [`CC6QLF4DI7C6LKURR2V7XQOZ72BNG5BOKURQ2SYQHPTAZEHO7PLRMR5K`](https://stellar.expert/explorer/testnet/contract/CC6QLF4DI7C6LKURR2V7XQOZ72BNG5BOKURQ2SYQHPTAZEHO7PLRMR5K)
 * **Transaction Hash:** [`e2105673626ac4aade91e70f6fad328b9ff57b053c07b2f1a55c059724dbbe0d`](https://stellar.expert/explorer/testnet/tx/e2105673626ac4aade91e70f6fad328b9ff57b053c07b2f1a55c059724dbbe0d)
 ![Testnet Contract](public/testnetv2.png)
