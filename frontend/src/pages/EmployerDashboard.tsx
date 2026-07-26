@@ -55,15 +55,16 @@ function Stepper({ current }: { current: WizardStep }) {
   );
 }
 
-// ── Step 1: Upload ────────────────────────────────────────────
 function UploadStep({
-  xlmPrice, workers, onUpload, onNext, isBuilding,
+  xlmPrice, workers, onUpload, onNext, isBuilding, csvErrors, downloadTemplate
 }: {
   xlmPrice: number | null;
   workers: WorkerRow[];
   onUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onNext: () => void;
   isBuilding: boolean;
+  csvErrors: string[];
+  downloadTemplate: () => void;
 }) {
   return (
     <motion.div key="upload" initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -24 }}>
@@ -817,6 +818,8 @@ export default function EmployerDashboard() {
                   onUpload={handleUpload}
                   onNext={handleBuildBatch}
                   isBuilding={isBuilding}
+                  csvErrors={csvErrors}
+                  downloadTemplate={downloadTemplate}
                 />
               )}
               {activeTab === 'run_payroll' && step === 'review' && (
