@@ -241,69 +241,8 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## User Feedback
 
-| Timestamp | Email Address |  Name | Wallet Address | Connecting my wallet and navigating the initial setup was fast, clear, and seamless. | Uploading payroll CSV data and initiating batch payments was intuitive and straightforward. | Generating the zero-knowledge proof and submitting the withdrawal request was smooth and completed in an acceptable amount of time. | I feel confident that my salary details and wallet identity remain private and protected when processing transactions on this app. | The application executed my transactions reliably without encountering confusing errors or unexpected failures. | Please rate the following aspects of your experience: [Value for Money] |
-|---|---|---|---|---|---|---|---|---|---|
-| 46226.03358926224 | gullesalthea00@gmail.com | Gulles, Althea Shane S. | GCS5GUCKP3CMIIEBU3U6AV3ATXFE6I7RE65VQB547SRFZCN4N62C6PXV | 5 | 5 | 4 | 5 | 5 |  |
-| 46226.073176509526 | fernettepearl.franco55@gmail.com | Franco, Fernette Pearl M. | GD5A6DGRUEXGBNC4PVSFDU6L77S3C44Z555WH6YTKFSLXGWJ3ZJE3UOT | 5 | 5 | 5 | 5 | 5 | some of the crypto jargon is kinda confusing. A simple tooltip explaining how the encryption works would be great. |
-| 46226.09135234531 | luizaaa.hebrez@gmail.com | Hebrez, Maria Luiza | GCUKW7HTQY7WHZ4JS34NMJRMPLBLPAYITPH7XFMBYGX6TI76QKM4EYQ6 | 5 | 5 | 5 | 4 | 5 |  |
-| 46226.101438160236 | paulbenidictr@gmail.com | Reduta, Paul Benidict L. | GDXCBPRKLMTXHCRECESGR36LDFO4JV6GFCE7BSWRYOJMXNTAHOWH5V7H | 5 | 5 | 5 | 4 | 5 |  |
-| 46226.14813291479 | kristofferan22@gmail.com | Anipan, Sigmund Kristoffer S. | GBIBGWKYVDPFWYOE4K7AWNLBYZWYLKVAQAKARINBZUEPW2WSNGNJBVZD | 5 | 5 | 5 | 5 | 5 |  |
-| 46226.31887582384 | gutierrez.kingandrei21@gmail.com | Gutierrez, King Andrei B. | GCHTES4A26325RZBDWXPPNCM44OACO22DEV3DFA3R7SEQIDJ53OELMAA | 5 | 5 | 4 | 5 | 5 |  |
-| 46226.36153143662 | aronstephenscordova@gmail.com | Cordova, Aron Stephen S. | GDFV4S7CEPVUZERFAC4SGB7FAYOHUXDAQ4TIY372ZYZPHHMEPXYBORYV | 5 | 4 | 5 | 5 | 5 |  |
-| 46226.36746894304 | althea.mae.aragon12@gmail.com | Aragon, Althea Mae C. | GBFUHVGBZ53WR7UPSZABOTE427LRMBIHG4BK23ANZEIXC7XIK74WMYUK | 5 | 5 | 5 | 5 | 4 |  |
-| 46226.38069378236 | dimayuga.adrieljoseph03@gmail.com | Dimayuga, Adriel Joseph I. | GBO4XAZ2EBJDXUOXGWSYEB6EAOAVAYD5OKQTRTURFIBCRGHOBRM3CAEY | 5 | 5 | 5 | 5 | 4 |  |
-| 46226.413375049604 | ciaramariecondino0901@gmail.com | Condino, Ciara Marie M. | GBBRIUIVZSM54ZL6XDUYCAKX54JQPWM7D2GYGAETJAEEWYLQVZOZYGCB | 5 | 4 | 5 | 4 | 5 |  |
-| 46226.510232871544 | arguelles.norlan1@gmail.com | Arguelles, Norlan C. | GB5YCQ3JDW2BPKXLTAA2UYWEIWUE7NUSRP5NVKOBWJ7AFVWFQALNBBSE | 5 | 5 | 5 | 5 | 5 |  |
-| 46226.55703276863 | karlcaya0704@gmail.com | Caya, Karl Christian M. | GCVZ6RBOZG33J46FSPBREDR3CTPQMZ7VNJMNKRLMYTWEYIILZCEMXG6B | 5 | 4 | 5 | 5 | 4 |  |
-| 46226.59443512881 | jundamdannkyle@gmail.com | Jundam, Dann Kyle O. | GBCKVV6SGF2JG5RINPTSZGSHOP5SOZXE7F56KPMUDVW25MIN3B4X52WF | 5 | 5 | 5 | 5 | 5 |  |
-| 46226.61501432358 | gianrafaelroldan13@gmail.com | Roldan, Gian Rafael B. | GBIA2ANAEQCWCBWERL2BQIQZCSSPZC3TEVQWCCUQHX2VKZTC54UQOMGI | 5 | 5 | 5 | 5 | 5 |  |
-| 46226.72805268077 | thonbernas1134@gmail.com | Bernas, Ernesto P. | GCA67WTEAAYHXKIDASLNCLWHVDNF74VKEWRPJXGD5N23PCMQBQLNFBFH | 5 | 5 | 5 | 4 | 4 |  |
-| 46226.82237884574 | olandazo37@gmail.com | Dazo, Rollan D. | GA6POXPWGCI4WGXUPFYKCUIU2QOMRGMUJ63C5VK33WM63EZEDQDTHSEZ | 5 | 5 | 5 | 5 | 5 | i want something that would tell me exactly which row in my CSV is messed up before uploading. A template file would be a lifesaver |
-| 46226.89742734137 | lopezhosheashania710@gmail.com | Lopez, Hoshea Shania C. | GABZIOHF7WFZWT57FMSDZFVKRVBPZLHU7K6AY2KSIXD7U76Y75SNF7HV | 4 | 5 | 5 | 5 | 5 |  |
-| 46227.0466530884 | tstapxdl@gmail.com | Serohijos, Joshua L. | GBCA5W4NVXMQG2PTAL4OH3H3I6LNWBAWH75OAXH3AMAQZZ3MTKSU3RJ5 | 5 | 5 | 4 | 4 | 5 |  |
-| 46227.18494468872 | bernadette14@gmail.com | Villanueva, Bernadette C. | GDTE73O75ZBSD6LVJP2RGOYGBEBFVXQN7L4NL5J7TU5BBVQGHZE5NBYW | 5 | 5 | 5 | 5 | 5 |  |
-| 46227.2034269817 | kalelleee@gmail.com | Victorio, Kalelle Mae B. | GD67ZTHZC7NM3EY46MY4HU4UHXYARJDGYP2QCFOH2MBFKOHPS6FKCPRX | 5 | 5 | 3 | 5 | 5 |  |
-| 46227.451254115775 | vinceadrianbesa@gmail.com | Besa, Vince Adrian A. | GDXQ3KMSQ2XAFPLCCXRUQZUJ2WY5DG7HZL2MBAQRI5FEASFH6DNLE54G | 5 | 5 | 4 | 5 | 5 |  |
-| 46227.517045082044 | zcintillaserquina@gmail.com | Serquiña, Zcintilla R. | GCBTTURJUALC7YSSOSTSR5AEZJZUIPSC27WNWPDK32B6LKOAE4HB22J4 | 5 | 5 | 4 | 5 | 5 |  |
-| 46227.56323831127 | corpus.precioushannah1@gmail.com | Corpus, Precious Hannah A. | GANESVMNUQCQPQV7LSPGUCGOR2CDZISWX6UIVH6RMQ2S4BKHMKLEQLDA | 5 | 4 | 5 | 5 | 5 |  |
-| 46227.60107612251 | aefondo124@gmail.com | Efondo, Aaron Kyle D. | GBPLR7A55MZQTCUS3WI3BQY654JG7N6YJB6DK423PO2JEL7ZEBZMNJCS | 5 | 4 | 4 | 4 | 5 |  |
-| 46227.683073045184 | annaydmaypineda15@gmail.com | Pineda, Dyanna May D. | GDY5F7WBVQ6VNSRQUWGOZ6PBD6OTAW53UYCD47SE6XBSFPFKE2X6HC4T | 5 | 5 | 5 | 4 | 5 |  |
-| 46227.78291786543 | maestremichaelrua@gmail.com | Maestre, Michael Rua S. | GDKQZ4TSVGVIFJVOORHIYAMGIMWOZL624Y4GLUIVRNRYA7UWHNEVKMY5 | 5 | 5 | 5 | 5 | 5 |  |
-| 46227.828478872405 | kenjicanpos829@gmail.com | Campos, Kenji Enishi R. | GBHIGREB5OZYBEO4KXZ5V7T275PZ6GXD5CMV7DFMW4VVSDVDYCZYQNIQ | 5 | 5 | 5 | 5 | 5 |  |
-| 46227.860288322365 | johncriscaculitan01@gmail.com | Caculitan, John Cris C. | GCDUPLIIKFXCBRDPYR56UDT2FCYJWNK3DZ4MQ2Z5QXUWQF4HYO2CH3TM | 5 | 5 | 4 | 5 | 5 |  |
-| 46227.86193037449 | mikee.capilitan@gmail.com | Capilitan, Mikee C. | GARX77WOWPP4P4KAJVI7D4CZDVNZFTW7DA7NYU47W6IKNQKE77URVKZS | 5 | 5 | 4 | 5 | 5 |  |
-| 46227.865981999515 | johnmatthewbautista01@gmail.com | Bautista, John Matthew B. | GC645UYSXJP6EHZSJ7G6B7GO5R4W7QD44DK5RKUTRYCFHLWVQKMJL2EH | 5 | 5 | 5 | 5 | 4 |  |
-| 46227.89275161005 | nioneszyra@gmail.com | Niones, Zyra Joy O. | GBSAKWKXPM2A3YL2MB3FYF7CMR23UISNO5UWTGZDWU5PMDE7D4OEIT3Q | 5 | 5 | 5 | 4 | 5 |  |
-| 46227.99499491804 | abriannebuenacifra@gmail.com | Buenacifra, Abrianne V. | GA5K4G7AGONRRRMZNFBN5GVMZDQMBJCHMBDSBUP53NY3SEG67XCXYN76 | 5 | 5 | 5 | 5 | 5 |  |
-| 46228.07493142978 | alexagonato@gmail.com | Gonato, Jan Alexa Louisse P. | GC24XDXYWIACLKMBKBJR4JPDDEYI3KVTZCS6BMS4HWLOZDJPHNWRMMY6 | 5 | 5 | 5 | 5 | 4 |  |
-| 46228.113418707064 | jakimlopez28@gmail.com | Lopez, Jakim D. | GATWLYZWB2ZBTDJFP3B3NB2HJF54J7ONDLULGPJVA34OCMVGD45JXQ4O | 5 | 5 | 5 | 5 | 5 |  |
-| 46228.12196413877 | causonmikolorenz@gmail.com | Causon, Miko Lorenz O. | GD6KS3PN7BWPICFZORGACL3473T3372UASRBMMBIKUIWCGPTQ3MEA6HW | 5 | 5 | 4 | 4 | 5 |  |
-| 46228.16129112787 | maroselacetolentino@gmail.com | Tolentino, Ma. Rose L. | GB24VAOZSVUHG4GUKCFHSNZMSZNLPDN6VBBGWWSMTNRS6M2DISHRY6B5 | 5 | 5 | 3 | 5 | 5 |  |
-| 46228.28001674321 | dionkylo123@gmail.com | Manicio, Dion Kylo C. | GBMZBQ7MYN6I3VSWVZDTH6F2ZO6JZZXL3CWKOD4JG36F4S7VXK5PCNCN | 5 | 4 | 5 | 5 | 4 |  |
-| 46228.303621665254 | althenoteroo@gmail.com | Tero, Altheno Mari L. | GBRXA5BY5FT52WZKCXEUHIHZO4JFYKMQ4ZZIXPFUPHBZFWBWKB23UGUB | 5 | 5 | 4 | 5 | 5 |  |
-| 46228.47916241006 | agultorazehl@gmail.com | Agulto, Jermaine Razeh S. | GCKBPMSXVZCUW5XPJSSOLHRRXHSC4KZ4YAFLRXTZEFWC4METX4C7YG55 | 5 | 5 | 5 | 4 | 5 |  |
-| 46228.59393836684 | hanzmatthewgagtan0920@gmail.com | Gagtan, Hanz Matthew A. | GAT5KQRGYSDAKRPNQUJIHIDUN7G34EM7JHTV32ZOFOZ44YI3V3YXNRPL | 5 | 5 | 5 | 5 | 5 |  |
-| 46228.598654491725 | rainey231@gmail.com | Romero, Dianna Rain M. | GCIOYBJVTSAH5HOP6VH2TS2LJL3E7DSANFR5G3IM6B5XQHB54GQPUNDQ | 5 | 5 | 4 | 5 | 5 |  |
-| 46228.73329885192 | jairaocariza@gmail.com | Ocariza, Jaira Isabel F. | GAIUE66U3F3POH35OXQTJEQH7RRGRNYPGF73KOFWLFFPJ5KFGVUSHMOO | 5 | 5 | 5 | 5 | 5 |  |
-| 46228.78649053259 | johnkeithvillarta3@gmail.com | Villarta, John Keith B. | GASPZO4YEQO5IS4EY5GBVJE4OFJ3LLXZGPEDVPNM3N4CA5AELT5LDOEZ | 5 | 5 | 5 | 5 | 5 |  |
-| 46228.82789444143 | euriellebayos0052@gmail.com | Bayos, Eurielle T. | GC4JWJNTQ37CJ3VI3FTJ5S55VBYI73KCSJI3UHL5NDHWBW6FURKIJPJW | 4 | 5 | 5 | 5 | 5 |  |
-| 46228.874431498174 | rgslspr14@gmail.com | Salespara, Rica Genevive B. | GCYRTXWICYH4646YROHXLTT4NEEPRUBAA6JBGHHYETCIR2KTK3CNARDV | 5 | 4 | 4 | 4 | 5 |  |
-| 46228.90135671653 | mikaela.bartolome13@gmail.com | Bartolome, Mikaela Joy T. | GDIAD2A5KVIQDZUH6XC7CCJZ7WUSKCREHVMMEBUF4SWDBRF2SXNKSKVD | 5 | 5 | 5 | 4 | 4 |  |
-| 46229.035343717165 | gracegabrielle17@gmail.com | Banzali, Grace Gabrielle P. | GBJLG2VYKC5TKKQHGO5ZDH6LQ2BD64533J4MPCMJDISKWRFTLZRMAXN3 | 5 | 4 | 5 | 5 | 5 |  |
-| 46229.23718393678 | angellajaneraymundo05@gmail.com | Raymundo, Angella Jane C. | GCAWTQW67INI6STOFD6PCT76BLG7TH3ITQO7TCUM3BTDBQVJQAWJDAEA | 4 | 4 | 5 | 5 | 5 |  |
-| 46229.31749930201 | sariogrld02@gmail.com | Sario, Gerald B. | GCXZDCS6V7OTUYLOL6GIC5VBJXRBOPNTCZP2UYXSY2Q4THZMM5OWTQEM | 4 | 5 | 5 | 4 | 5 |  |
-| 46229.38902110753 | joshmespinola@gmail.com | Espinola, Frankie Josh M. | GAHZZTLXSOHXEIOJAHGGEZRN4AEQAMZPE523DBNITEDVGELFVV5CAQBQ | 5 | 4 | 5 | 5 | 5 |  |
-| 46229.42717938416 | christianbataller788@gmail.com | Bataller, Christian R. | GCNZP7MXVVQJHODEAS4AJXFHUPJT7C2QDL6DFFH6EMIQOWVAIXEOPWRT | 5 | 5 | 5 | 5 | 5 |  |
-| 46229.55963793694 | johnpaul7519@gmail.com | Rodriguez, John Paul Olores | GANCQMH5WAJDOXFJHNIILFMKZDC2KY6X2EEP7YELAWFXPD2POVAAW5DO | 4 | 5 | 5 | 5 | 4 |  |
-| 46229.696842686004 | jmmanagbanag123@gmail.com | Managbanag, John Mark E. | GCCBPDKY3JKCJQWY44KFOMRDNWV6C32ELBQSCQB2CWZNUZIO3DXAGWOL | 4 | 5 | 5 | 5 | 5 |  |
-| 46229.71641705357 | jaolazo4@gmail.com | Olazo, John Albert F. | GD3P6V32MQ3HG73QWV3SOEOVBVKIYI6QWVNIHNYXRYJJ3XEQETI72TUE | 5 | 5 | 5 | 5 | 5 |  |
-| 46229.79327487116 | bualatbenchbrian@gmail.com | Bualat, Bench Brian B. | GCX3ZI6PBRJXEULQUQO4CUWJ7GB3EJZGHKC2UQQST2KSGNI64MVOPSG3 | 5 | 5 | 5 | 4 | 5 |  |
-| 46229.829059427604 | moraleswomandaphne@gmail.com | Morales, Woman Daphne P. | GA4I4RXW5HK2RXZZ3POVXPFOKCPCZWD6M5TEO2GAOBYFGBARJCZ2SMT5 | 5 | 4 | 5 | 5 | 5 |  |
-| 46229.832677026585 | duncan222@gmail.com | Gonot, Jedi Duncan S. | GCO6ZMZTGGTTL5LBREQDUW6YJX2Y23AWMI2RVBO4WTOXGFZAJLX65SLX | 4 | 5 | 5 | 5 | 5 | Please add a button to export my payout history as a PDF or CSV! I really need simple receipts for tax season instead of just relying on the blockchain |
-| 46229.86802986687 | tevesgwenn.sch@gmail.com | Teves, Gwen L. | GA64LF2X2QQIOVSMGKLJEWUHOXC4732CI2UYN7WTXP3O2QBN4UAEW7JX | 5 | 5 | 3 | 5 | 5 |  |
-| 46229.90549155418 | kianbenedict7@gmail.com | Miguel, Kian Benedict U. | GBLKU2A4Z6J43V2VZ6ZOTJROOH2CVKCF7VC6O4HU275GCNMXIVHS3TCE | 5 | 5 | 5 | 5 | 5 |  |
-| 46229.93073740131 | limgraceannef@gmail.com | Lim, Grace Anne F. | GAXC36KHXPRDE72SBDFBUJR4WOV37HE2EDYLCFN74OVZM7CPNZNUVL54 | 4 | 5 | 5 | 5 | 5 |  |
-| 46229.94432338665 | raquemannierose36@gmail.com | Raquem, Annie Rose S. | GAJYEUBBFYSZY2PNAVKFOH7ERMF2DBWAMF74LXEEEC4ZFQZEBYEJUWFC | 5 | 5 | 4 | 5 | 5 |  |
+[View full feedback form responses (XLSX)](./public/AegisPay%20Feedback%20Form%20(Responses).xlsx)
+
 
 ### User Feedback Summary & Next Steps
 
