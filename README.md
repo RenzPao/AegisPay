@@ -318,3 +318,19 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 **3. CSV Upload & Error Handling**
 - **Request:** Employers are frustrated by vague errors during the payroll upload process.
 - **Actionable Item:** Implement row-specific error reporting so users know exactly what needs fixing before they upload. Additionally, provide a downloadable "Template CSV" to help prevent formatting mistakes from the start.
+
+### User Feedback Iterations (Implemented)
+
+Following the feedback received, we successfully deployed the following upgrades to the platform:
+
+**1. Tax-Compliant Data Exports**
+- Added \jspdf\ and \jspdf-autotable\ to generate professional PDF receipts upon successful wage claims.
+- Added a CSV export button, allowing users to safely download their transaction history (Transaction Hash, Amount, XLM/USDC, Network Fee) for tax reporting.
+
+**2. Jargon-Free Tooltips**
+- Built a reusable, animated \<Tooltip>\ component to clarify complex cryptography.
+- ZK-SNARKs are now explained as a *"Privacy Check"*, Nullifiers as an *"Anti-Fraud Check"*, and Anchors as the *"Fiat Provider"* directly within the UI.
+
+**3. Robust CSV Error Handling**
+- Integrated \papaparse\ in the Employer Dashboard to intercept poorly formatted payroll uploads.
+- Employers now receive a detailed, row-specific error report (e.g., *"Row 4: Invalid wage amount"*) instead of a vague failure, and can download a strictly formatted **Template CSV** before uploading.
