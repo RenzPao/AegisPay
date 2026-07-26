@@ -304,3 +304,17 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 | 46229.90549155418 | kianbenedict7@gmail.com | Miguel, Kian Benedict U. | GBLKU2A4Z6J43V2VZ6ZOTJROOH2CVKCF7VC6O4HU275GCNMXIVHS3TCE | 5 | 5 | 5 | 5 | 5 |  |
 | 46229.93073740131 | limgraceannef@gmail.com | Lim, Grace Anne F. | GAXC36KHXPRDE72SBDFBUJR4WOV37HE2EDYLCFN74OVZM7CPNZNUVL54 | 4 | 5 | 5 | 5 | 5 |  |
 | 46229.94432338665 | raquemannierose36@gmail.com | Raquem, Annie Rose S. | GAJYEUBBFYSZY2PNAVKFOH7ERMF2DBWAMF74LXEEEC4ZFQZEBYEJUWFC | 5 | 5 | 4 | 5 | 5 |  |
+
+### User Feedback Summary & Next Steps
+
+**1. Data Export & Tax Compliance**
+- **Request:** Users need a simple way to export their payout history.
+- **Actionable Item:** Add a button to download transaction receipts as PDF or CSV files, making it easier for users to track their income for tax season without relying on blockchain explorers.
+
+**2. User Education & Clarity**
+- **Request:** Users find the current crypto terminology confusing, even though they appreciate the privacy features.
+- **Actionable Item:** Introduce jargon-free tooltips or brief explainers throughout the app that break down how the encryption and privacy mechanics work in plain English.
+
+**3. CSV Upload & Error Handling**
+- **Request:** Employers are frustrated by vague errors during the payroll upload process.
+- **Actionable Item:** Implement row-specific error reporting so users know exactly what needs fixing before they upload. Additionally, provide a downloadable "Template CSV" to help prevent formatting mistakes from the start.
