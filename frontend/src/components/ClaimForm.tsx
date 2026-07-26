@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Hash, DollarSign, ChevronRight, CheckCircle, AlertCircle } from 'lucide-react';
 import type { ToastType } from './Toast';
 import { ErrorModal, useErrorModal } from './ErrorModal';
+import { Tooltip } from './Tooltip';
 
 import { config } from '../lib/config';
 import { generateProof } from '../lib/zkProver';
@@ -67,7 +68,7 @@ function ProofDisplay({ proof, signals, nullifier }: { proof: object; signals: s
         <span className="badge badge-accent" style={{ marginLeft: 'auto', fontSize: '0.65rem' }}>✓ Valid</span>
       </div>
       <div className="proof-terminal-body">
-        <div><span className="comment">// Groth16 BN254 ZK-SNARK — Generated in browser</span></div>
+        <div><span className="comment">// Groth16 BN254 ZK-SNARK — Generated in browser <Tooltip content="Privacy Check (Proves you belong to the payroll without revealing your identity to the public)" /></span></div>
         <div><span className="label">nullifier: </span><span className="value" style={{ fontSize: '0.72rem' }}>{nullifier}</span></div>
         <div><span className="label">merkleRoot: </span><span className="value" style={{ fontSize: '0.72rem' }}>{signals[0]?.slice(0, 20)}...</span></div>
         <div><span className="label">claimedAmount: </span><span className="value">{signals[2]} <span className="comment">(stroops)</span></span></div>
@@ -116,8 +117,43 @@ function SuccessView({ txHash, amount, onReset }: { txHash: string; amount: stri
         <div className="proof-terminal-body">
           <div><span className="label">status: </span><span style={{ color: 'var(--color-accent)' }}>SUCCESS</span></div>
           <div><span className="label">hash: </span><span className="value" style={{ fontSize: '0.7rem' }}>{txHash}</span></div>
-          <div><span className="label">nullifier: </span><span className="value">marked as spent ✓</span></div>
+          <div><span className="label">nullifier: </span><span className="value">marked as spent ✓ <Tooltip content="Anti-Fraud Check (Ensures a salary can only be claimed exactly once)" /></span></div>
         </div>
+      </div>
+
+      <div style={{ display: 'flex', gap: '10px', marginBottom: 'var(--space-6)' }}>
+        <button 
+          className="btn btn-outline" 
+          style={{ flex: 1, padding: '10px', fontSize: '0.85rem' }}
+          onClick={() => {
+            import('../lib/receipt').then(({ downloadReceiptPDF }) => {
+              downloadReceiptPDF({
+                txHash,
+                amount: (parseFloat(amount) / 1e7).toFixed(2),
+                asset: 'XLM',
+                date: new Date().toLocaleDateString()
+              });
+            });
+          }}
+        >
+          📄 PDF Receipt
+        </button>
+        <button 
+          className="btn btn-outline" 
+          style={{ flex: 1, padding: '10px', fontSize: '0.85rem' }}
+          onClick={() => {
+            import('../lib/receipt').then(({ downloadReceiptCSV }) => {
+              downloadReceiptCSV({
+                txHash,
+                amount: (parseFloat(amount) / 1e7).toFixed(2),
+                asset: 'XLM',
+                date: new Date().toLocaleDateString()
+              });
+            });
+          }}
+        >
+          📊 Export CSV
+        </button>
       </div>
 
       <button className="btn btn-glass" onClick={onReset} style={{ width: '100%' }}>
@@ -403,7 +439,7 @@ export function ClaimSection({ notify }: ClaimSectionProps) {
                             <div className="input-group">
                               <label className="input-label" htmlFor="anchorAddress">
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                                  <span>Receiving Stellar Address <span className="required" aria-hidden="true">*</span></span>
+                                  <span>Receiving Stellar Address <Tooltip content="Fiat Provider (The partnered financial institution that converts your digital dollars into a direct bank transfer)" /><span className="required" aria-hidden="true">*</span></span>
                                   <button type="button" onClick={handleConnectWallet} className="form-label-action">
                                     Connect Freighter
                                   </button>

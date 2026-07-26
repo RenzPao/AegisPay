@@ -13,6 +13,8 @@ import { kit } from '../lib/wallet';
 import { History } from 'lucide-react';
 import { ErrorModal, useErrorModal } from '../components/ErrorModal';
 import { config } from '../lib/config';
+import Papa from 'papaparse';
+import { Tooltip } from '../components/Tooltip';
 
 // ── Types ─────────────────────────────────────────────────────
 interface WorkerRow { workerId: string; wageAmountUsd: number; wageAmountXlm: number; }
@@ -96,12 +98,35 @@ function UploadStep({
           </>
         )}
         {xlmPrice && (
-          <div style={{ marginTop: 12, display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 99, padding: '4px 14px', fontSize: '0.8rem' }}>
-            <span className="pulse-dot" style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--color-accent)', display: 'inline-block' }} />
-            Live rate: 1 XLM = ${xlmPrice.toFixed(4)} USD
+          <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 99, padding: '4px 14px', fontSize: '0.8rem' }}>
+              <span className="pulse-dot" style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--color-accent)', display: 'inline-block' }} />
+              Live XLM Rate: <strong>${xlmPrice.toFixed(4)}</strong>
+            </div>
+            <button 
+              type="button"
+              className="btn btn-outline" 
+              style={{ fontSize: '0.8rem', padding: '6px 12px' }}
+              onClick={downloadTemplate}
+            >
+              <Download size={14} style={{ marginRight: '4px' }}/> Download Template CSV
+            </button>
           </div>
         )}
       </div>
+
+      {csvErrors.length > 0 && (
+        <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', borderRadius: 'var(--radius-md)', padding: 'var(--space-4)', marginBottom: 'var(--space-6)' }}>
+          <h4 style={{ color: '#ef4444', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <AlertCircle size={16} /> CSV Errors Found
+          </h4>
+          <ul style={{ color: 'var(--color-foreground)', fontSize: '0.85rem', paddingLeft: '20px' }}>
+            {csvErrors.map((err, i) => (
+              <li key={i} style={{ marginBottom: '4px' }}>{err}</li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {/* Preview table */}
       {workers.length > 0 && (
@@ -379,6 +404,7 @@ export default function EmployerDashboard() {
   const [workers, setWorkers] = useState<WorkerRow[]>([]);
   const [xlmPrice, setXlmPrice] = useState<number | null>(null);
   const [isBuilding, setIsBuilding] = useState(false);
+  const [csvErrors, setCsvErrors] = useState<string[]>([]);
   const [registry, setRegistry] = useState<PayrollRegistry | null>(null);
   const [merkleRoot, setMerkleRoot] = useState('0x...');
   const [publishStatus, setPublishStatus] = useState<PublishStatus>('idle');
@@ -458,22 +484,61 @@ export default function EmployerDashboard() {
     if (!xlmPrice) { showError('xlm price feed not yet available, please try again in a moment.'); return; }
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = evt => {
-      const text = evt.target?.result as string;
-      const lines = text.split('\n').filter(l => l.trim());
-      const rows: WorkerRow[] = [];
-      for (let i = 1; i < lines.length; i++) {
-        const [id, usdStr] = lines[i].split(',');
-        if (id?.trim() && usdStr?.trim()) {
-          const usd = parseFloat(usdStr.trim());
-          if (!isNaN(usd)) rows.push({ workerId: id.trim(), wageAmountUsd: usd, wageAmountXlm: usd / xlmPrice! });
+
+    setCsvErrors([]); // Reset errors
+    
+    Papa.parse(file, {
+      header: true,
+      skipEmptyLines: true,
+      complete: (results) => {
+        const rows: WorkerRow[] = [];
+        const errors: string[] = [];
+        
+        results.data.forEach((row: any, index: number) => {
+          const rowNum = index + 2; // +1 for header, +1 for 0-index
+          const id = row.workerId?.trim();
+          const usdStr = row.wageAmountUSD?.trim() || row.wageAmountUsd?.trim();
+
+          if (!id) {
+            errors.push(`Row ${rowNum}: Missing workerId.`);
+          }
+          if (!usdStr) {
+            errors.push(`Row ${rowNum}: Missing wage amount.`);
+          } else {
+            const usd = parseFloat(usdStr.replace(/[^0-9.-]+/g, ''));
+            if (isNaN(usd) || usd <= 0) {
+              errors.push(`Row ${rowNum}: Invalid wage amount '${usdStr}'.`);
+            } else if (id) {
+              rows.push({ workerId: id, wageAmountUsd: usd, wageAmountXlm: usd / xlmPrice! });
+            }
+          }
+        });
+
+        if (errors.length > 0) {
+          setCsvErrors(errors);
+          setWorkers([]);
+        } else if (rows.length === 0) {
+          setCsvErrors(['Invalid CSV format: No valid rows found. Make sure your CSV has a header row and columns: workerId, wageAmountUSD']);
+        } else {
+          setWorkers(rows);
         }
+      },
+      error: (error) => {
+        setCsvErrors([`CSV Parsing Error: ${error.message}`]);
       }
-      if (rows.length === 0) { showError('invalid csv format: no valid rows found. Make sure your CSV has a header row and columns: workerId, wageAmountUSD'); return; }
-      setWorkers(rows);
-    };
-    reader.readAsText(file);
+    });
+  };
+
+  const downloadTemplate = () => {
+    const csvContent = "workerId,wageAmountUSD\nWORKER_001,500.00\nWORKER_002,1200.50";
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = "aegispay_template.csv";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   // Step 1 → 2: build Merkle tree
