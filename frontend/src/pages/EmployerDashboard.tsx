@@ -99,21 +99,22 @@ function UploadStep({
           </>
         )}
         {xlmPrice && (
-          <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 99, padding: '4px 14px', fontSize: '0.8rem' }}>
-              <span className="pulse-dot" style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--color-accent)', display: 'inline-block' }} />
-              Live XLM Rate: <strong>${xlmPrice.toFixed(4)}</strong>
-            </div>
-            <button 
-              type="button"
-              className="btn btn-outline" 
-              style={{ fontSize: '0.8rem', padding: '6px 12px' }}
-              onClick={downloadTemplate}
-            >
-              <Download size={14} style={{ marginRight: '4px' }}/> Download Template CSV
-            </button>
+          <div style={{ marginTop: 12, display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 99, padding: '4px 14px', fontSize: '0.8rem' }}>
+            <span className="pulse-dot" style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--color-accent)', display: 'inline-block' }} />
+            Live XLM Rate: <strong>${xlmPrice.toFixed(4)}</strong>
           </div>
         )}
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: 'var(--space-6)' }}>
+        <button 
+          type="button"
+          className="btn btn-outline" 
+          style={{ fontSize: '0.8rem', padding: '6px 12px' }}
+          onClick={downloadTemplate}
+        >
+          <Download size={14} style={{ marginRight: '4px' }}/> Download Template CSV
+        </button>
       </div>
 
       {csvErrors.length > 0 && (
