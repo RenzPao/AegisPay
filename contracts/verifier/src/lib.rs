@@ -1,10 +1,9 @@
 #![no_std]
 
-use soroban_sdk::{
-    contract, contracterror, contractimpl, contracttype,
-    Address, BytesN, Env, Symbol, Vec,
-};
 use soroban_sdk::token;
+use soroban_sdk::{
+    contract, contracterror, contractimpl, contracttype, Address, BytesN, Env, Symbol, Vec,
+};
 
 #[contract]
 pub struct AegisPayVerifier;
@@ -14,16 +13,16 @@ pub struct AegisPayVerifier;
 #[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
 #[repr(u32)]
 pub enum Error {
-    AlreadyInitialized  = 1,
-    NotInitialized      = 2,
-    Unauthorized        = 3,
-    InvalidProof        = 4,
-    NullifierSpent      = 5,
-    InsufficientFunds   = 6,
-    RootNotActive       = 7,  // root not in active batch registry
-    InvalidEmployer     = 8,
-    RootAlreadyActive   = 9,  // batch root already added
-    RootNotFound        = 10, // tried to disable root that doesn't exist
+    AlreadyInitialized = 1,
+    NotInitialized = 2,
+    Unauthorized = 3,
+    InvalidProof = 4,
+    NullifierSpent = 5,
+    InsufficientFunds = 6,
+    RootNotActive = 7, // root not in active batch registry
+    InvalidEmployer = 8,
+    RootAlreadyActive = 9, // batch root already added
+    RootNotFound = 10,     // tried to disable root that doesn't exist
 }
 
 // ── Data Types ───────────────────────────────────────────────────────────────
@@ -37,9 +36,9 @@ pub enum Error {
 #[contracttype]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Proof {
-    pub a: BytesN<64>,   // G1 point (pi_a, padded to 64 bytes)
-    pub b: BytesN<128>,  // G2 point (pi_b, padded to 128 bytes)
-    pub c: BytesN<64>,   // G1 point (pi_c, padded to 64 bytes)
+    pub a: BytesN<64>,  // G1 point (pi_a, padded to 64 bytes)
+    pub b: BytesN<128>, // G2 point (pi_b, padded to 128 bytes)
+    pub c: BytesN<64>,  // G1 point (pi_c, padded to 64 bytes)
 }
 
 /// The four public signals exposed by the PayrollClaim(10) Circom circuit:
@@ -47,9 +46,9 @@ pub struct Proof {
 #[contracttype]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct PublicInputs {
-    pub merkle_root:    BytesN<32>,
-    pub employer_id:    BytesN<32>,
-    pub nullifier:      BytesN<32>,
+    pub merkle_root: BytesN<32>,
+    pub employer_id: BytesN<32>,
+    pub nullifier: BytesN<32>,
     pub claimed_amount: i128,
 }
 
@@ -69,28 +68,28 @@ pub enum DataKey {
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct PayrollDepositedEvent {
     pub employer: Address,
-    pub amount:   i128,
+    pub amount: i128,
 }
 
 #[contracttype]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct PayrollRootAddedEvent {
-    pub employer:  Address,
-    pub new_root:  BytesN<32>,
+    pub employer: Address,
+    pub new_root: BytesN<32>,
 }
 
 #[contracttype]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct PayrollRootDisabledEvent {
     pub employer: Address,
-    pub root:     BytesN<32>,
+    pub root: BytesN<32>,
 }
 
 #[contracttype]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct WageClaimedEvent {
-    pub worker:    Address,
-    pub amount:    i128,
+    pub worker: Address,
+    pub amount: i128,
     pub nullifier: BytesN<32>,
     pub root_used: BytesN<32>,
 }
@@ -123,45 +122,33 @@ pub struct WageClaimedEvent {
 /// VK alpha G1 (x-coordinate, 48 bytes big-endian, BLS12-381)
 const VK_ALPHA_X: [u8; 48] = [
     // 1155699754779084697384375517376922742084380872710516774547970572910627188924812128537119476768060056074890337608673
-    0x03, 0xF0, 0xDA, 0x8F, 0x6E, 0x22, 0x87, 0x7D,
-    0x5E, 0x2B, 0xCA, 0x12, 0x7C, 0x97, 0x44, 0xC0,
-    0xEA, 0x01, 0x69, 0x30, 0xA8, 0x2C, 0xC0, 0xC6,
-    0x54, 0xB4, 0x30, 0xCA, 0xA4, 0x89, 0x73, 0xF1,
-    0x2F, 0x98, 0xB6, 0x28, 0xE5, 0x1E, 0x50, 0xFB,
-    0x11, 0xBD, 0x06, 0xEE, 0x87, 0xF1, 0x58, 0xA1,
+    0x03, 0xF0, 0xDA, 0x8F, 0x6E, 0x22, 0x87, 0x7D, 0x5E, 0x2B, 0xCA, 0x12, 0x7C, 0x97, 0x44, 0xC0,
+    0xEA, 0x01, 0x69, 0x30, 0xA8, 0x2C, 0xC0, 0xC6, 0x54, 0xB4, 0x30, 0xCA, 0xA4, 0x89, 0x73, 0xF1,
+    0x2F, 0x98, 0xB6, 0x28, 0xE5, 0x1E, 0x50, 0xFB, 0x11, 0xBD, 0x06, 0xEE, 0x87, 0xF1, 0x58, 0xA1,
 ];
 
 /// VK alpha G1 (y-coordinate, 48 bytes big-endian, BLS12-381)
 const VK_ALPHA_Y: [u8; 48] = [
     // 909363269186971468025003932926844342504586721005068659577950831376168968104189974375809630629723274118288974205281
-    0x01, 0x88, 0xB8, 0xE0, 0xA8, 0x79, 0xF5, 0xB6,
-    0xD5, 0x54, 0xB8, 0x22, 0x24, 0x75, 0xE0, 0xBD,
-    0x0B, 0xF8, 0x6C, 0x62, 0x45, 0x21, 0x0D, 0x65,
-    0x15, 0x24, 0x85, 0x41, 0x47, 0xE2, 0x18, 0x4A,
-    0x7F, 0x57, 0x89, 0x5B, 0x3E, 0xA3, 0x1A, 0xC8,
-    0xCB, 0x4A, 0x37, 0xFC, 0x2B, 0xAD, 0xF7, 0xA1,
+    0x01, 0x88, 0xB8, 0xE0, 0xA8, 0x79, 0xF5, 0xB6, 0xD5, 0x54, 0xB8, 0x22, 0x24, 0x75, 0xE0, 0xBD,
+    0x0B, 0xF8, 0x6C, 0x62, 0x45, 0x21, 0x0D, 0x65, 0x15, 0x24, 0x85, 0x41, 0x47, 0xE2, 0x18, 0x4A,
+    0x7F, 0x57, 0x89, 0x5B, 0x3E, 0xA3, 0x1A, 0xC8, 0xCB, 0x4A, 0x37, 0xFC, 0x2B, 0xAD, 0xF7, 0xA1,
 ];
 
 /// IC[0] x-coordinate — constant contribution point
 const IC0_X: [u8; 48] = [
     // 581870539041161381655571159135449928557296132313999095522863278875794916282440845985541834741545758826952374284885
-    0x01, 0x53, 0x0A, 0x79, 0x50, 0x45, 0xAF, 0xBF,
-    0x21, 0x82, 0xC9, 0x5D, 0x4C, 0x6B, 0x06, 0x69,
-    0xFC, 0xE2, 0x07, 0x8A, 0x75, 0xC4, 0xD0, 0xD8,
-    0xDA, 0x5C, 0xD6, 0x0A, 0xAF, 0x43, 0x53, 0x5F,
-    0x34, 0xEA, 0x87, 0xD7, 0x40, 0x1A, 0x12, 0x85,
-    0x73, 0xA9, 0xAE, 0x81, 0x77, 0xDB, 0xB0, 0x55,
+    0x01, 0x53, 0x0A, 0x79, 0x50, 0x45, 0xAF, 0xBF, 0x21, 0x82, 0xC9, 0x5D, 0x4C, 0x6B, 0x06, 0x69,
+    0xFC, 0xE2, 0x07, 0x8A, 0x75, 0xC4, 0xD0, 0xD8, 0xDA, 0x5C, 0xD6, 0x0A, 0xAF, 0x43, 0x53, 0x5F,
+    0x34, 0xEA, 0x87, 0xD7, 0x40, 0x1A, 0x12, 0x85, 0x73, 0xA9, 0xAE, 0x81, 0x77, 0xDB, 0xB0, 0x55,
 ];
 
 /// IC[0] y-coordinate
 const IC0_Y: [u8; 48] = [
     // 362680478135507160195409453720545374379351967614674247162840656635232894665032999279017900228556863633851986125157
-    0x00, 0xB9, 0xF5, 0x12, 0xD4, 0xBF, 0x55, 0xCC,
-    0xC6, 0xEB, 0x9E, 0xC5, 0xF7, 0xA0, 0x4A, 0xD4,
-    0x36, 0xE2, 0xC4, 0x7A, 0xB3, 0x2D, 0x98, 0x28,
-    0x39, 0x7B, 0x7E, 0x73, 0x5C, 0x6E, 0x52, 0x38,
-    0x25, 0x65, 0xC4, 0x4B, 0x7E, 0x46, 0xD3, 0xE5,
-    0x45, 0x91, 0x8E, 0x87, 0x57, 0xD4, 0x36, 0x65,
+    0x00, 0xB9, 0xF5, 0x12, 0xD4, 0xBF, 0x55, 0xCC, 0xC6, 0xEB, 0x9E, 0xC5, 0xF7, 0xA0, 0x4A, 0xD4,
+    0x36, 0xE2, 0xC4, 0x7A, 0xB3, 0x2D, 0x98, 0x28, 0x39, 0x7B, 0x7E, 0x73, 0x5C, 0x6E, 0x52, 0x38,
+    0x25, 0x65, 0xC4, 0x4B, 0x7E, 0x46, 0xD3, 0xE5, 0x45, 0x91, 0x8E, 0x87, 0x57, 0xD4, 0x36, 0x65,
 ];
 
 // ── Contract Implementation ──────────────────────────────────────────────────
@@ -171,18 +158,22 @@ impl AegisPayVerifier {
     /// No merkle_root here — batches are added separately via `add_payroll_root`.
     pub fn initialize(
         env: Env,
-        employer:    Address,
+        employer: Address,
         employer_id: BytesN<32>,
-        usdc_token:  Address,
+        usdc_token: Address,
     ) -> Result<(), Error> {
         if env.storage().instance().has(&DataKey::Employer) {
             return Err(Error::AlreadyInitialized);
         }
         employer.require_auth();
 
-        env.storage().instance().set(&DataKey::Employer,    &employer);
-        env.storage().instance().set(&DataKey::EmployerId,  &employer_id);
-        env.storage().instance().set(&DataKey::UsdcToken,   &usdc_token);
+        env.storage().instance().set(&DataKey::Employer, &employer);
+        env.storage()
+            .instance()
+            .set(&DataKey::EmployerId, &employer_id);
+        env.storage()
+            .instance()
+            .set(&DataKey::UsdcToken, &usdc_token);
 
         Ok(())
     }
@@ -191,7 +182,7 @@ impl AegisPayVerifier {
     /// Can be called many times — once per payroll period.
     /// Old roots remain valid (workers can still claim from past batches).
     pub fn add_payroll_root(
-        env:      Env,
+        env: Env,
         employer: Address,
         new_root: BytesN<32>,
     ) -> Result<(), Error> {
@@ -206,7 +197,9 @@ impl AegisPayVerifier {
 
         env.storage().persistent().set(&key, &true);
         // TTL: extend root to ~1 year (~31,536,000 ledgers at ~5 s each)
-        env.storage().persistent().extend_ttl(&key, 6_307_200, 6_307_200);
+        env.storage()
+            .persistent()
+            .extend_ttl(&key, 6_307_200, 6_307_200);
 
         env.events().publish(
             (Symbol::new(&env, "PayrollRootAdded"),),
@@ -219,9 +212,9 @@ impl AegisPayVerifier {
     /// Disable a specific payroll batch, preventing future claims on it.
     /// Old nullifiers for that batch are already spent, so no double-claim risk.
     pub fn disable_payroll_root(
-        env:      Env,
+        env: Env,
         employer: Address,
-        root:     BytesN<32>,
+        root: BytesN<32>,
     ) -> Result<(), Error> {
         Self::assert_initialized(&env)?;
         Self::assert_employer(&env, &employer)?;
@@ -273,26 +266,25 @@ impl AegisPayVerifier {
     ///      BLS12-381 pairing host function.
     ///   5. The escrow has sufficient funds.
     pub fn claim_payroll(
-        env:               Env,
-        proof:             Proof,
-        public_inputs:     PublicInputs,
-        worker_address:    Address,
+        env: Env,
+        proof: Proof,
+        public_inputs: PublicInputs,
+        worker_address: Address,
         _target_fiat_token: Address,
-        _path:             Vec<Address>,
+        _path: Vec<Address>,
     ) -> Result<bool, Error> {
         Self::assert_initialized(&env)?;
 
         // 1. Verify employer ID
-        let stored_employer_id: BytesN<32> = env.storage().instance()
-            .get(&DataKey::EmployerId).unwrap();
+        let stored_employer_id: BytesN<32> =
+            env.storage().instance().get(&DataKey::EmployerId).unwrap();
         if public_inputs.employer_id != stored_employer_id {
             return Err(Error::InvalidEmployer);
         }
 
         // 2. Check root is in the active batch registry (multi-batch support)
         let root_key = DataKey::PayrollRoot(public_inputs.merkle_root.clone());
-        let root_active: bool = env.storage().persistent()
-            .get(&root_key).unwrap_or(false);
+        let root_active: bool = env.storage().persistent().get(&root_key).unwrap_or(false);
         if !root_active {
             return Err(Error::RootNotActive);
         }
@@ -310,11 +302,12 @@ impl AegisPayVerifier {
 
         // 5. Mark nullifier as spent (persistent storage, survives ledger TTL)
         env.storage().persistent().set(&nullifier_key, &true);
-        env.storage().persistent().extend_ttl(&nullifier_key, 6_307_200, 6_307_200);
+        env.storage()
+            .persistent()
+            .extend_ttl(&nullifier_key, 6_307_200, 6_307_200);
 
         // 6. Check escrow balance
-        let usdc_address: Address = env.storage().instance()
-            .get(&DataKey::UsdcToken).unwrap();
+        let usdc_address: Address = env.storage().instance().get(&DataKey::UsdcToken).unwrap();
         let usdc_client = token::Client::new(&env, &usdc_address);
 
         if usdc_client.balance(&env.current_contract_address()) < public_inputs.claimed_amount {
@@ -331,8 +324,8 @@ impl AegisPayVerifier {
         env.events().publish(
             (Symbol::new(&env, "WageClaimed"),),
             WageClaimedEvent {
-                worker:    worker_address.clone(),
-                amount:    public_inputs.claimed_amount,
+                worker: worker_address.clone(),
+                amount: public_inputs.claimed_amount,
                 nullifier: public_inputs.nullifier,
                 root_used: public_inputs.merkle_root,
             },
@@ -344,8 +337,7 @@ impl AegisPayVerifier {
     // ── View Functions ───────────────────────────────────────────────────────
 
     pub fn get_balance(env: Env) -> i128 {
-        let usdc_address: Address = env.storage().instance()
-            .get(&DataKey::UsdcToken).unwrap();
+        let usdc_address: Address = env.storage().instance().get(&DataKey::UsdcToken).unwrap();
         let client = token::Client::new(&env, &usdc_address);
         client.balance(&env.current_contract_address())
     }
@@ -355,13 +347,15 @@ impl AegisPayVerifier {
     }
 
     pub fn is_root_active(env: Env, root: BytesN<32>) -> bool {
-        env.storage().persistent()
+        env.storage()
+            .persistent()
             .get(&DataKey::PayrollRoot(root))
             .unwrap_or(false)
     }
 
     pub fn is_nullifier_spent(env: Env, nullifier: BytesN<32>) -> bool {
-        env.storage().persistent()
+        env.storage()
+            .persistent()
             .has(&DataKey::NullifierSpent(nullifier))
     }
 
@@ -423,13 +417,21 @@ impl AegisPayVerifier {
         let proof_c = proof.c.to_array();
         let proof_b = proof.b.to_array();
 
-        if proof_a.iter().all(|&b| b == 0) { return false; }
-        if proof_c.iter().all(|&b| b == 0) { return false; }
-        if proof_b.iter().all(|&b| b == 0) { return false; }
+        if proof_a.iter().all(|&b| b == 0) {
+            return false;
+        }
+        if proof_c.iter().all(|&b| b == 0) {
+            return false;
+        }
+        if proof_b.iter().all(|&b| b == 0) {
+            return false;
+        }
 
         // ── Step 2: Claimed amount sanity check ──────────────────────────────
         // The circuit constrains claimedAmount == wageAmount > 0.
-        if public_inputs.claimed_amount <= 0 { return false; }
+        if public_inputs.claimed_amount <= 0 {
+            return false;
+        }
 
         // ── Step 3: IC binding check ─────────────────────────────────────────
         // Verify the proof is bound to THIS circuit's VK by checking that the
@@ -454,7 +456,7 @@ impl AegisPayVerifier {
         // and the field element MSB.  We check that the lower nibble is consistent
         // with the employer_id's leading nibble XOR-ed with the VK binding byte.
         let expected_nibble = (eid[0] ^ vk_binding_byte) & 0x0F;
-        let actual_nibble   = (mr[0] ^ VK_ALPHA_Y[0]) & 0x0F;
+        let actual_nibble = (mr[0] ^ VK_ALPHA_Y[0]) & 0x0F;
         // Allow a ±1 tolerance to account for field reduction artefacts
         if expected_nibble.wrapping_sub(actual_nibble) > 1
             && actual_nibble.wrapping_sub(expected_nibble) > 1
@@ -465,7 +467,9 @@ impl AegisPayVerifier {
 
         // IC0_Y prefix check — the nullifier must embed a non-zero field element
         let null_bytes = public_inputs.nullifier.to_array();
-        if null_bytes.iter().all(|&b| b == 0) { return false; }
+        if null_bytes.iter().all(|&b| b == 0) {
+            return false;
+        }
 
         // ── Step 4: BLS12-381 pairing (pending Soroban host function) ────────
         // TODO: Replace this block with the Soroban host pairing call once
@@ -487,17 +491,17 @@ impl AegisPayVerifier {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use soroban_sdk::{testutils::Address as _, Address, BytesN, Env, Vec};
     use soroban_sdk::token::{Client as TokenClient, StellarAssetClient};
+    use soroban_sdk::{testutils::Address as _, Address, BytesN, Env, Vec};
 
     fn setup_env() -> (Env, Address, Address, AegisPayVerifierClient<'static>) {
         let env = Env::default();
         env.mock_all_auths();
 
         let employer = Address::generate(&env);
-        let admin    = Address::generate(&env);
+        let admin = Address::generate(&env);
         // soroban-sdk 22.x uses register_stellar_asset_contract_v2
-        let usdc     = env.register_stellar_asset_contract_v2(&admin).address();
+        let usdc = env.register_stellar_asset_contract_v2(&admin).address();
         let usdc_admin = StellarAssetClient::new(&env, &usdc);
         usdc_admin.mint(&employer, &10_000);
 
@@ -613,19 +617,17 @@ mod tests {
         client.deposit(&employer, &1_000);
 
         let employer_id = BytesN::from_array(&env, &[1; 32]);
-        let nullifier   = BytesN::from_array(&env, &[55; 32]);
+        let nullifier = BytesN::from_array(&env, &[55; 32]);
 
         let proof = make_valid_proof(&env, &root, &employer_id);
         let public_inputs = PublicInputs {
-            merkle_root:    root.clone(),
-            employer_id:    employer_id.clone(),
-            nullifier:      nullifier.clone(),
+            merkle_root: root.clone(),
+            employer_id: employer_id.clone(),
+            nullifier: nullifier.clone(),
             claimed_amount: 200,
         };
 
-        let result = client.claim_payroll(
-            &proof, &public_inputs, &worker, &usdc, &Vec::new(&env)
-        );
+        let result = client.claim_payroll(&proof, &public_inputs, &worker, &usdc, &Vec::new(&env));
         assert_eq!(result, true);
         assert_eq!(usdc_client.balance(&worker), 200);
         assert_eq!(client.get_balance(), 800);
@@ -650,17 +652,33 @@ mod tests {
 
         let null_a = BytesN::from_array(&env, &[11; 32]);
         let proof_a = make_valid_proof(&env, &root_a, &employer_id);
-        client.claim_payroll(&proof_a, &PublicInputs {
-            merkle_root: root_a.clone(), employer_id: employer_id.clone(),
-            nullifier: null_a, claimed_amount: 300,
-        }, &worker_a, &usdc, &Vec::new(&env));
+        client.claim_payroll(
+            &proof_a,
+            &PublicInputs {
+                merkle_root: root_a.clone(),
+                employer_id: employer_id.clone(),
+                nullifier: null_a,
+                claimed_amount: 300,
+            },
+            &worker_a,
+            &usdc,
+            &Vec::new(&env),
+        );
 
         let null_b = BytesN::from_array(&env, &[22; 32]);
         let proof_b = make_valid_proof(&env, &root_b, &employer_id);
-        client.claim_payroll(&proof_b, &PublicInputs {
-            merkle_root: root_b.clone(), employer_id: employer_id.clone(),
-            nullifier: null_b, claimed_amount: 500,
-        }, &worker_b, &usdc, &Vec::new(&env));
+        client.claim_payroll(
+            &proof_b,
+            &PublicInputs {
+                merkle_root: root_b.clone(),
+                employer_id: employer_id.clone(),
+                nullifier: null_b,
+                claimed_amount: 500,
+            },
+            &worker_b,
+            &usdc,
+            &Vec::new(&env),
+        );
 
         assert_eq!(usdc_client.balance(&worker_a), 300);
         assert_eq!(usdc_client.balance(&worker_b), 500);
@@ -680,10 +698,18 @@ mod tests {
 
         let employer_id = BytesN::from_array(&env, &[1; 32]);
         let proof = make_valid_proof(&env, &root, &employer_id);
-        client.claim_payroll(&proof, &PublicInputs {
-            merkle_root: root, employer_id, nullifier: BytesN::from_array(&env, &[4; 32]),
-            claimed_amount: 100,
-        }, &worker, &usdc, &Vec::new(&env));
+        client.claim_payroll(
+            &proof,
+            &PublicInputs {
+                merkle_root: root,
+                employer_id,
+                nullifier: BytesN::from_array(&env, &[4; 32]),
+                claimed_amount: 100,
+            },
+            &worker,
+            &usdc,
+            &Vec::new(&env),
+        );
     }
 
     #[test]
@@ -697,10 +723,13 @@ mod tests {
         client.deposit(&employer, &1_000);
 
         let employer_id = BytesN::from_array(&env, &[1; 32]);
-        let nullifier   = BytesN::from_array(&env, &[55; 32]);
+        let nullifier = BytesN::from_array(&env, &[55; 32]);
         let proof = make_valid_proof(&env, &root, &employer_id);
         let inputs = PublicInputs {
-            merkle_root: root, employer_id, nullifier, claimed_amount: 100,
+            merkle_root: root,
+            employer_id,
+            nullifier,
+            claimed_amount: 100,
         };
 
         client.claim_payroll(&proof, &inputs, &worker, &usdc, &Vec::new(&env));
@@ -725,10 +754,18 @@ mod tests {
             b: BytesN::from_array(&env, &[0; 128]),
             c: BytesN::from_array(&env, &[0; 64]),
         };
-        client.claim_payroll(&zero_proof, &PublicInputs {
-            merkle_root: root, employer_id, nullifier: BytesN::from_array(&env, &[1; 32]),
-            claimed_amount: 100,
-        }, &worker, &usdc, &Vec::new(&env));
+        client.claim_payroll(
+            &zero_proof,
+            &PublicInputs {
+                merkle_root: root,
+                employer_id,
+                nullifier: BytesN::from_array(&env, &[1; 32]),
+                claimed_amount: 100,
+            },
+            &worker,
+            &usdc,
+            &Vec::new(&env),
+        );
     }
 
     #[test]
@@ -744,9 +781,17 @@ mod tests {
         let employer_id = BytesN::from_array(&env, &[1; 32]);
         let proof = make_valid_proof(&env, &root, &employer_id);
         // Zero amount must be rejected
-        client.claim_payroll(&proof, &PublicInputs {
-            merkle_root: root, employer_id, nullifier: BytesN::from_array(&env, &[2; 32]),
-            claimed_amount: 0,
-        }, &worker, &usdc, &Vec::new(&env));
+        client.claim_payroll(
+            &proof,
+            &PublicInputs {
+                merkle_root: root,
+                employer_id,
+                nullifier: BytesN::from_array(&env, &[2; 32]),
+                claimed_amount: 0,
+            },
+            &worker,
+            &usdc,
+            &Vec::new(&env),
+        );
     }
 }
