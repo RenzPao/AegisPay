@@ -100,7 +100,7 @@ jobs:
 
       - name: Import deployer keypair
         run: |
-          stellar keys import deployer --secret-key "${{ secrets.STELLAR_SECRET_KEY }}"
+          stellar keys add deployer --secret-key "${{ secrets.STELLAR_SECRET_KEY }}"
 
       - name: Fund deployer account on Testnet (friendbot)
         run: |
