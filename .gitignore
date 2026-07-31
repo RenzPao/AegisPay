@@ -5,3 +5,5 @@ frontend/dist/
 frontend/.env
 contracts/verifier/target/
  test_scripts/
+
+test_scripts/
