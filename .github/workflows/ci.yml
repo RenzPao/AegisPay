@@ -47,10 +47,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install Rust stable
+      # soroban-sdk 22.x requires Rust 1.84+ and the wasm32v1-none target.
+      # wasm32-unknown-unknown is no longer supported for Soroban WASM builds
+      # because it enables multi-value returns that the Soroban runtime rejects.
+      - name: Install Rust stable (1.84+)
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: wasm32-unknown-unknown
+          targets: wasm32v1-none
           components: clippy, rustfmt
 
       - name: Cache Rust build artefacts
@@ -74,11 +77,11 @@ jobs:
         run: cargo test --features testutils
 
       - name: Build WASM release artefact
-        run: cargo build --release --target wasm32-unknown-unknown
+        run: cargo build --release --target wasm32v1-none
 
       - name: Upload WASM artefact
         uses: actions/upload-artifact@v4
         with:
           name: aegispay-verifier-wasm
-          path: contracts/verifier/target/wasm32-unknown-unknown/release/soroban_zk_verifier.wasm
+          path: contracts/verifier/target/wasm32v1-none/release/soroban_zk_verifier.wasm
           retention-days: 7

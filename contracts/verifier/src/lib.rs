@@ -496,11 +496,13 @@ mod tests {
 
         let employer = Address::generate(&env);
         let admin    = Address::generate(&env);
-        let usdc     = env.register_stellar_asset_contract(admin.clone());
+        // soroban-sdk 22.x uses register_stellar_asset_contract_v2
+        let usdc     = env.register_stellar_asset_contract_v2(&admin).address();
         let usdc_admin = StellarAssetClient::new(&env, &usdc);
         usdc_admin.mint(&employer, &10_000);
 
-        let contract_id = env.register_contract(None, AegisPayVerifier);
+        // soroban-sdk 22.x: register_contract(None, X) → register(X)
+        let contract_id = env.register(AegisPayVerifier {});
         let client = AegisPayVerifierClient::new(&env, &contract_id);
 
         let employer_id = BytesN::from_array(&env, &[1; 32]);

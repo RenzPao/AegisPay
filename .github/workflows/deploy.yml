@@ -62,10 +62,6 @@ jobs:
   deploy-contract:
     name: Deploy Smart Contract to Stellar Testnet
     runs-on: ubuntu-latest
-    # Only deploy the contract when contract source changes
-    # and only if STELLAR_SECRET_KEY is configured in repository secrets
-    if: |
-      github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     env:
       NETWORK: testnet
       RPC_URL: https://soroban-testnet.stellar.org
@@ -74,10 +70,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install Rust stable + WASM target
+      # soroban-sdk 22.x requires Rust 1.84+ and the wasm32v1-none target.
+      # wasm32-unknown-unknown is no longer supported for Soroban WASM builds.
+      - name: Install Rust stable (1.84+)
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: wasm32-unknown-unknown
+          targets: wasm32v1-none
 
       - name: Cache Rust build artefacts
         uses: actions/cache@v4
@@ -92,34 +90,28 @@ jobs:
 
       - name: Build WASM
         working-directory: contracts/verifier
-        run: cargo build --release --target wasm32-unknown-unknown
-
-      - name: Optimise WASM (strip + shrink)
-        run: |
-          cargo install wasm-opt --quiet 2>/dev/null || true
-          WASM=contracts/verifier/target/wasm32-unknown-unknown/release/soroban_zk_verifier.wasm
-          wasm-opt -Oz --strip-debug -o $WASM $WASM 2>/dev/null || echo "wasm-opt not available, skipping"
+        run: cargo build --release --target wasm32v1-none
 
       - name: Install Stellar CLI
         run: |
           curl -sSL https://github.com/stellar/stellar-cli/releases/latest/download/stellar-cli-x86_64-unknown-linux-gnu.tar.gz | tar -xz -C /usr/local/bin
           stellar --version
 
-      - name: Fund deployer account on Testnet (friendbot)
-        # Only needed the first time; safe to call repeatedly
+      - name: Import deployer keypair
         run: |
-          PUBLIC_KEY=$(stellar keys public-key --account deployer 2>/dev/null || echo "")
-          if [ -z "$PUBLIC_KEY" ]; then
-            echo "Deriving public key from secret..."
-            stellar keys import deployer --secret-key "${{ secrets.STELLAR_SECRET_KEY }}"
-          fi
+          stellar keys import deployer --secret-key "${{ secrets.STELLAR_SECRET_KEY }}"
+
+      - name: Fund deployer account on Testnet (friendbot)
+        run: |
           PUBLIC_KEY=$(stellar keys public-key --account deployer)
-          curl -s "https://friendbot.stellar.org?addr=${PUBLIC_KEY}" | jq -r '.result.hash // "Already funded or error"'
+          echo "Deployer public key: $PUBLIC_KEY"
+          curl -s "https://friendbot.stellar.org?addr=${PUBLIC_KEY}" | jq -r '.result.hash // "Already funded"'
 
       - name: Deploy contract to Testnet
         id: deploy
+        working-directory: contracts/verifier
         run: |
-          WASM=contracts/verifier/target/wasm32-unknown-unknown/release/soroban_zk_verifier.wasm
+          WASM=target/wasm32v1-none/release/soroban_zk_verifier.wasm
           CONTRACT_ID=$(stellar contract deploy \
             --wasm $WASM \
             --source deployer \
