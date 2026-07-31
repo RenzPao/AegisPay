@@ -2,7 +2,7 @@
 
 use soroban_sdk::token;
 use soroban_sdk::{
-    contract, contracterror, contractimpl, contracttype, Address, BytesN, Env, Symbol, Vec,
+    contract, contracterror, contractevent, contractimpl, contracttype, Address, BytesN, Env, Vec,
 };
 
 #[contract]
@@ -64,28 +64,28 @@ pub enum DataKey {
 }
 
 // ── Events ───────────────────────────────────────────────────────────────────
-#[contracttype]
+#[contractevent(topics = ["PayrollDeposited"])]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct PayrollDepositedEvent {
     pub employer: Address,
     pub amount: i128,
 }
 
-#[contracttype]
+#[contractevent(topics = ["PayrollRootAdded"])]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct PayrollRootAddedEvent {
     pub employer: Address,
     pub new_root: BytesN<32>,
 }
 
-#[contracttype]
+#[contractevent(topics = ["PayrollRootDisabled"])]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct PayrollRootDisabledEvent {
     pub employer: Address,
     pub root: BytesN<32>,
 }
 
-#[contracttype]
+#[contractevent(topics = ["WageClaimed"])]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct WageClaimedEvent {
     pub worker: Address,
@@ -144,6 +144,7 @@ const IC0_X: [u8; 48] = [
 ];
 
 /// IC[0] y-coordinate
+#[allow(dead_code)]
 const IC0_Y: [u8; 48] = [
     // 362680478135507160195409453720545374379351967614674247162840656635232894665032999279017900228556863633851986125157
     0x00, 0xB9, 0xF5, 0x12, 0xD4, 0xBF, 0x55, 0xCC, 0xC6, 0xEB, 0x9E, 0xC5, 0xF7, 0xA0, 0x4A, 0xD4,
@@ -201,10 +202,7 @@ impl AegisPayVerifier {
             .persistent()
             .extend_ttl(&key, 6_307_200, 6_307_200);
 
-        env.events().publish(
-            (Symbol::new(&env, "PayrollRootAdded"),),
-            PayrollRootAddedEvent { employer, new_root },
-        );
+        PayrollRootAddedEvent { employer, new_root }.publish(&env);
 
         Ok(())
     }
@@ -227,10 +225,7 @@ impl AegisPayVerifier {
 
         env.storage().persistent().set(&key, &false);
 
-        env.events().publish(
-            (Symbol::new(&env, "PayrollRootDisabled"),),
-            PayrollRootDisabledEvent { employer, root },
-        );
+        PayrollRootDisabledEvent { employer, root }.publish(&env);
 
         Ok(())
     }
@@ -244,12 +239,9 @@ impl AegisPayVerifier {
 
         let usdc_address: Address = env.storage().instance().get(&DataKey::UsdcToken).unwrap();
         let client = token::Client::new(&env, &usdc_address);
-        client.transfer(&employer, &env.current_contract_address(), &amount);
+        client.transfer(&employer, env.current_contract_address(), &amount);
 
-        env.events().publish(
-            (Symbol::new(&env, "PayrollDeposited"),),
-            PayrollDepositedEvent { employer, amount },
-        );
+        PayrollDepositedEvent { employer, amount }.publish(&env);
 
         Ok(())
     }
@@ -321,15 +313,13 @@ impl AegisPayVerifier {
             &public_inputs.claimed_amount,
         );
 
-        env.events().publish(
-            (Symbol::new(&env, "WageClaimed"),),
-            WageClaimedEvent {
-                worker: worker_address.clone(),
-                amount: public_inputs.claimed_amount,
-                nullifier: public_inputs.nullifier,
-                root_used: public_inputs.merkle_root,
-            },
-        );
+        WageClaimedEvent {
+            worker: worker_address.clone(),
+            amount: public_inputs.claimed_amount,
+            nullifier: public_inputs.nullifier,
+            root_used: public_inputs.merkle_root,
+        }
+        .publish(&env);
 
         Ok(true)
     }
