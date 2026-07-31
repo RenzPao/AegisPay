@@ -110,7 +110,7 @@ jobs:
 
       - name: Fund deployer account on Testnet (friendbot)
         run: |
-          PUBLIC_KEY=$(stellar keys public-key --account deployer)
+          PUBLIC_KEY=$(stellar keys public-key deployer)
           echo "Deployer public key: $PUBLIC_KEY"
           curl -s "https://friendbot.stellar.org?addr=${PUBLIC_KEY}" | jq -r '.result.hash // "Already funded"'
 
