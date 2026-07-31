@@ -490,13 +490,11 @@ mod tests {
 
         let employer = Address::generate(&env);
         let admin = Address::generate(&env);
-        // soroban-sdk 22.x uses register_stellar_asset_contract_v2
-        let usdc = env.register_stellar_asset_contract_v2(&admin).address();
+        let usdc = env.register_stellar_asset_contract_v2(admin).address();
         let usdc_admin = StellarAssetClient::new(&env, &usdc);
         usdc_admin.mint(&employer, &10_000);
 
-        // soroban-sdk 22.x: register_contract(None, X) → register(X)
-        let contract_id = env.register(AegisPayVerifier {});
+        let contract_id = env.register(AegisPayVerifier {}, ());
         let client = AegisPayVerifierClient::new(&env, &contract_id);
 
         let employer_id = BytesN::from_array(&env, &[1; 32]);
@@ -550,9 +548,9 @@ mod tests {
     fn test_add_multiple_roots() {
         let (env, employer, _usdc, client) = setup_env();
 
-        let root_a = BytesN::from_array(&env, &[10; 32]);
-        let root_b = BytesN::from_array(&env, &[20; 32]);
-        let root_c = BytesN::from_array(&env, &[30; 32]);
+        let root_a = BytesN::from_array(&env, &[2; 32]);
+        let root_b = BytesN::from_array(&env, &[3; 32]);
+        let root_c = BytesN::from_array(&env, &[4; 32]);
 
         client.add_payroll_root(&employer, &root_a);
         client.add_payroll_root(&employer, &root_b);
@@ -569,7 +567,7 @@ mod tests {
     #[test]
     fn test_duplicate_root_fails() {
         let (env, employer, _usdc, client) = setup_env();
-        let root = BytesN::from_array(&env, &[10; 32]);
+        let root = BytesN::from_array(&env, &[2; 32]);
 
         client.add_payroll_root(&employer, &root);
         let result = client.try_add_payroll_root(&employer, &root);
@@ -579,7 +577,7 @@ mod tests {
     #[test]
     fn test_disable_root() {
         let (env, employer, _usdc, client) = setup_env();
-        let root = BytesN::from_array(&env, &[10; 32]);
+        let root = BytesN::from_array(&env, &[2; 32]);
 
         client.add_payroll_root(&employer, &root);
         assert!(client.is_root_active(&root));
@@ -602,7 +600,7 @@ mod tests {
         let worker = Address::generate(&env);
         let usdc_client = TokenClient::new(&env, &usdc);
 
-        let root = BytesN::from_array(&env, &[10; 32]);
+        let root = BytesN::from_array(&env, &[2; 32]);
         client.add_payroll_root(&employer, &root);
         client.deposit(&employer, &1_000);
 
@@ -631,8 +629,8 @@ mod tests {
         let worker_b = Address::generate(&env);
         let usdc_client = TokenClient::new(&env, &usdc);
 
-        let root_a = BytesN::from_array(&env, &[10; 32]);
-        let root_b = BytesN::from_array(&env, &[20; 32]);
+        let root_a = BytesN::from_array(&env, &[2; 32]);
+        let root_b = BytesN::from_array(&env, &[3; 32]);
 
         client.add_payroll_root(&employer, &root_a);
         client.add_payroll_root(&employer, &root_b);
@@ -681,7 +679,7 @@ mod tests {
         let (env, employer, usdc, client) = setup_env();
         let worker = Address::generate(&env);
 
-        let root = BytesN::from_array(&env, &[10; 32]);
+        let root = BytesN::from_array(&env, &[2; 32]);
         client.add_payroll_root(&employer, &root);
         client.disable_payroll_root(&employer, &root);
         client.deposit(&employer, &1_000);
@@ -708,7 +706,7 @@ mod tests {
         let (env, employer, usdc, client) = setup_env();
         let worker = Address::generate(&env);
 
-        let root = BytesN::from_array(&env, &[10; 32]);
+        let root = BytesN::from_array(&env, &[2; 32]);
         client.add_payroll_root(&employer, &root);
         client.deposit(&employer, &1_000);
 
@@ -733,7 +731,7 @@ mod tests {
         let (env, employer, usdc, client) = setup_env();
         let worker = Address::generate(&env);
 
-        let root = BytesN::from_array(&env, &[10; 32]);
+        let root = BytesN::from_array(&env, &[2; 32]);
         client.add_payroll_root(&employer, &root);
         client.deposit(&employer, &1_000);
 
@@ -764,7 +762,7 @@ mod tests {
         let (env, employer, usdc, client) = setup_env();
         let worker = Address::generate(&env);
 
-        let root = BytesN::from_array(&env, &[10; 32]);
+        let root = BytesN::from_array(&env, &[2; 32]);
         client.add_payroll_root(&employer, &root);
         client.deposit(&employer, &1_000);
 
