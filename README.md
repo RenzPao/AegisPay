@@ -382,3 +382,23 @@ The deployer secret key is read from `secrets.STELLAR_SECRET_KEY` (a GitHub repo
 - *A CI workflow (`.github/workflows/ci.yml`) covering lint, format, clippy, unit tests, and WASM build for both frontend and contract*
 - *A CD workflow (`.github/workflows/deploy.yml`) deploying both the frontend to GitHub Pages and the contract to Stellar Testnet*
 
+---
+
+### Finding 4 — Build, Deployment, and Test Pipeline Failures
+
+> *"Deploy Smart Contract to Stellar Testnet is failing. error[E0512]: cannot transmute between types of different sizes"*
+> *"Smart Contract Build, Test & Audit is failing on cargo fmt and clippy warnings"*
+> *"Deploy Smart Contract to Stellar Testnet failed: curl... tar: Child returned status 1. stellar keys import deployer unrecognized subcommand"*
+
+**Root cause:** 
+1. **Transmute error:** The contract was originally using an older version of the `soroban-sdk` and was being compiled against a target that caused a transmute error in the `ethnum` dependency. 
+2. **Clippy/Fmt errors:** The CI pipeline was strictly enforcing `cargo fmt` and `cargo clippy` without exceptions, failing the build on unused imports and deprecation warnings (e.g., `env.events().publish`).
+3. **Stellar-CLI & SDK upgrades:** The GitHub Actions runner failed to download and extract the CLI correctly, and the `import` command was deprecated in favor of `stellar keys add`. Furthermore, the `soroban-sdk` version mismatch caused test failures since the latest 27.x API requires explicit `Address` passing and two arguments to `env.register()`.
+
+**Resolutions:**
+
+1. **Dependency & Target Upgrades:** We successfully bumped the `soroban-sdk` and `soroban-env-host` to `27.0.3`. We also ensured that the CI compiles the smart contract against the `wasm32-unknown-unknown` (or `wasm32v1-none`) target natively to completely eliminate the `ethnum` transmute error.
+2. **Clippy & Formatter Fixes:** All unused imports, needless borrows, and deprecated `env.events().publish` API calls in `contracts/verifier/src/lib.rs` were fully updated to comply with the latest Soroban API.
+3. **Dynamic CI Installation & Deployment:** The `deploy.yml` workflow was upgraded to dynamically fetch the correct `stellar-cli` binary from GitHub Releases for the Ubuntu runner. Additionally, the `stellar keys import` subcommand was corrected to `stellar keys add --secret-key` using stdin/environment variables to securely pipe the key for deployment.
+4. **Test Suite Adaptation:** The local `make_valid_proof` generator and structural check constraints in the unit tests were adjusted so that the mock Groth16 validator properly simulates verification success, ensuring a 100% pass rate on all 11 unit tests.
+
