@@ -98,9 +98,15 @@ jobs:
           curl -sSL $LATEST_URL | tar -xz -C /usr/local/bin
           stellar --version
 
-      - name: Import deployer keypair
+      - name: Setup deployer keypair
         run: |
-          echo "${{ secrets.STELLAR_SECRET_KEY }}" | stellar keys add deployer
+          if [ -z "${{ secrets.STELLAR_SECRET_KEY }}" ]; then
+            echo "Secret key not found, generating a new one..."
+            stellar keys generate deployer
+          else
+            echo "Importing secret key..."
+            echo "${{ secrets.STELLAR_SECRET_KEY }}" | stellar keys add deployer
+          fi
 
       - name: Fund deployer account on Testnet (friendbot)
         run: |
